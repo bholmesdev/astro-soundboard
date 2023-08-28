@@ -7,7 +7,7 @@ export const Board = pgTable("board", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-export const BoardItem = pgTable("board_item", {
+export const Sound = pgTable("sound", {
   id: uuid("id").primaryKey(),
   url: text("url").unique().notNull(),
   boardId: uuid("board_id").references(() => Board.id),
