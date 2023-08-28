@@ -1,0 +1,14 @@
+---
+import { eq } from "drizzle-orm";
+import { Board, db } from "@/lib/schema";
+import MainLayout from "@/layouts/MainLayout.astro";
+const { id } = Astro.params;
+
+const results = await db.select().from(Board).where(eq(Board.id, id!));
+const entry = results[0];
+if (!entry) throw new Error(`No entry with id ${id}`);
+---
+
+<MainLayout>
+  <h1>{entry.id}</h1>
+</MainLayout>
