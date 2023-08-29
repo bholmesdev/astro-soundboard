@@ -14,6 +14,6 @@ if (!entry) throw new Error(`No entry with id ${id}`);
 <MainLayout>
   <h1>{entry.id}</h1>
   <div class="grid grid-cols-3 gap-3 m-auto max-w-screen-xl">
-    <Sounds client:load initialSounds={sounds} />
+    <Sounds client:load initialSounds={sounds} boardId={entry.id} />
   </div>
 </MainLayout>
