@@ -1,0 +1,36 @@
+---
+import { Board, Sound, db } from "@/lib/schema";
+import { eq, sql } from "drizzle-orm";
+import MainLayout from "@/layouts/MainLayout.astro";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+
+const boards = await db
+  .select({
+    id: Board.id,
+    count: sql`COUNT(${Sound.id})`.mapWith(Number),
+  })
+  .from(Board)
+  .innerJoin(Sound, eq(Sound.boardId, Board.id))
+  .groupBy(sql`${Board.id}`);
+---
+
+<MainLayout>
+  <div class="grid grid-cols-3 gap-3 max-w-screen-xl">
+    {
+      boards.map((b) => (
+        <Card>
+          <CardHeader>
+            <h2>
+              <a href={`/boards/${b.id}`}>{b.id}</a>
+            </h2>
+          </CardHeader>
+          <CardContent>
+            <p>
+              {b.count} sound{b.count === 1 ? "" : "s"}
+            </p>
+          </CardContent>
+        </Card>
+      ))
+    }
+  </div>
+</MainLayout>

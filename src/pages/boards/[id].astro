@@ -1,14 +1,16 @@
 ---
 import { eq } from "drizzle-orm";
-import { Board, db } from "@/lib/schema";
+import { Board, Sound, db } from "@/lib/schema";
 import MainLayout from "@/layouts/MainLayout.astro";
 const { id } = Astro.params;
 
 const results = await db.select().from(Board).where(eq(Board.id, id!));
+const sounds = await db.select().from(Sound).where(eq(Sound.boardId, id!));
 const entry = results[0];
 if (!entry) throw new Error(`No entry with id ${id}`);
 ---
 
 <MainLayout>
   <h1>{entry.id}</h1>
+  {sounds.map((s) => <p>{s.id}</p>)}
 </MainLayout>
