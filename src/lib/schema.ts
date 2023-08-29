@@ -14,7 +14,7 @@ export const Sound = pgTable("sound", {
   id: uuid("id")
     .primaryKey()
     .$default(() => uuidv4()),
-  url: text("url").unique().notNull(),
+  url: text("url"),
   boardId: uuid("board_id").references(() => Board.id),
 });
 
