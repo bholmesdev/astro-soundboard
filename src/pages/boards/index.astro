@@ -3,6 +3,12 @@ import { Board, Sound, db } from "@/lib/schema";
 import { eq, sql } from "drizzle-orm";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+if (Astro.request.method === "POST") {
+  const [b] = await db.insert(Board).values({}).returning();
+  return Astro.redirect(`/boards/${b.id}`);
+}
 
 const boards = await db
   .select({
@@ -15,7 +21,7 @@ const boards = await db
 ---
 
 <MainLayout>
-  <div class="grid grid-cols-3 gap-3 max-w-screen-xl">
+  <div class="grid grid-cols-3 gap-3 max-w-screen-xl m-auto">
     {
       boards.map((b) => (
         <Card>
@@ -33,4 +39,7 @@ const boards = await db
       ))
     }
   </div>
+  <form method="POST">
+    <Button type="submit">Create board +</Button>
+  </form>
 </MainLayout>

@@ -2,6 +2,7 @@
 import { eq } from "drizzle-orm";
 import { Board, Sound, db } from "@/lib/schema";
 import MainLayout from "@/layouts/MainLayout.astro";
+import { Sounds } from "./_components/SoundForm";
 const { id } = Astro.params;
 
 const results = await db.select().from(Board).where(eq(Board.id, id!));
@@ -12,5 +13,7 @@ if (!entry) throw new Error(`No entry with id ${id}`);
 
 <MainLayout>
   <h1>{entry.id}</h1>
-  {sounds.map((s) => <p>{s.id}</p>)}
+  <div class="grid grid-cols-3 gap-3 m-auto max-w-screen-xl">
+    <Sounds client:load initialSounds={sounds} />
+  </div>
 </MainLayout>
