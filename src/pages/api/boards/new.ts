@@ -8,13 +8,16 @@ export const POST: APIRoute = async ({ request }) => {
   const raw = await request.json();
   const boardEntries = payload.parse(raw);
 
-  const [, url] = Object.entries(boardEntries)[0];
+  const urls = Object.values(boardEntries);
+
   const [createdBoard] = await db.insert(Board).values({}).returning();
 
-  await db.insert(Sound).values({
-    url,
-    boardId: createdBoard.id,
-  });
+  for (const url of urls) {
+    await db.insert(Sound).values({
+      url,
+      boardId: createdBoard.id,
+    });
+  }
 
   return new Response(
     JSON.stringify({
