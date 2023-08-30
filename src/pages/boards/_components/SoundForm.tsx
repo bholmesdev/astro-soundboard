@@ -98,6 +98,7 @@ function SoundFormMutation(initial: SoundFormProps) {
             className="text-2xl"
             type="text"
             name="name"
+            onFocus={(e) => e.target.select()}
             defaultValue={initial.name}
           />
           {isComplete ? (
