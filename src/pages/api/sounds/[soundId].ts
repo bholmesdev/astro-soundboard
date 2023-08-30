@@ -1,6 +1,13 @@
 import { Sound, db } from "@/lib/schema";
 import type { APIRoute } from "astro";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { zfd } from "zod-form-data";
+
+export const updateSoundValidator = zfd.formData({
+  name: zfd.text(z.string().nonempty()),
+  url: zfd.text(z.string().url()),
+});
 
 export const PUT: APIRoute = async ({ request, params }) => {
   const { soundId } = params;
@@ -9,12 +16,12 @@ export const PUT: APIRoute = async ({ request, params }) => {
   }
 
   const formData = await request.formData();
-  const url = formData.get("url");
-  if (typeof url !== "string") {
-    return new Response("Invalid url", { status: 400 });
+  const parsed = updateSoundValidator.safeParse(formData);
+  if (!parsed.success) {
+    return new Response(JSON.stringify(parsed.error), { status: 400 });
   }
 
-  await db.update(Sound).set({ url }).where(eq(Sound.id, soundId));
+  await db.update(Sound).set(parsed.data).where(eq(Sound.id, soundId));
 
-  return new Response(JSON.stringify({ soundId, url }));
+  return new Response(JSON.stringify({ success: true }));
 };

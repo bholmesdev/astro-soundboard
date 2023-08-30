@@ -2,19 +2,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { zfd } from "zod-form-data";
-import { z } from "zod";
 import {
   QueryClient,
   QueryClientProvider,
   useMutation,
 } from "@tanstack/react-query";
 import { useDebouncedCallback } from "@/lib/debounce";
-import type { Sound } from "@/lib/schema";
+import {
+  soundCompleteValidator,
+  type Sound,
+  soundValidator,
+} from "@/lib/schema";
+import { updateSoundValidator } from "@/pages/api/sounds/[soundId]";
 
 const queryClient = new QueryClient();
-
-type SoundFormProps = Pick<typeof Sound.$inferSelect, "id" | "url">;
 
 type SoundsFormProps = {
   boardId: string;
@@ -33,13 +34,16 @@ function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
   const [sounds, setSounds] = useState(initialSounds);
 
   const soundAdd = useMutation({
-    mutationFn: async () => {
+    async mutationFn() {
       const res = await fetch(`/api/sounds/new`, {
         method: "POST",
         body: JSON.stringify({ boardId }),
       });
-      const data = await res.json();
-      // surely type safety isn't important right?
+      const json = await res.json();
+      const parsed = soundValidator.parse(json);
+      return parsed;
+    },
+    async onSuccess(data) {
       setSounds((prev) => [...prev, data]);
     },
   });
@@ -50,29 +54,31 @@ function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
         <SoundFormMutation key={s.id} {...s} />
       ))}
       <Button onClick={() => soundAdd.mutate()}>Add</Button>
+      {soundAdd.error ? (
+        <p className="text-red-500">Unexpected error creating sound.</p>
+      ) : null}
     </>
   );
 }
 
-const soundFormValidator = zfd.formData({
-  name: zfd.text(z.string().nonempty()),
-  url: zfd.text(z.string().url()),
-});
+type SoundFormProps = Pick<typeof Sound.$inferSelect, "id" | "name" | "url">;
 
-function SoundFormMutation({ id, url }: SoundFormProps) {
+function SoundFormMutation(initial: SoundFormProps) {
   const soundUpdate = useMutation({
     mutationFn: async (formData: FormData) => {
-      return fetch(`/api/sounds/${id}`, {
+      return fetch(`/api/sounds/${initial.id}`, {
         method: "PUT",
         body: formData,
       });
     },
   });
-  // TODO: standardized check for incomplete sound entry
-  const isComplete = url || soundUpdate.status === "success";
+
+  const isComplete =
+    soundUpdate.isSuccess ||
+    soundCompleteValidator.omit({ boardId: true }).safeParse(initial).success;
 
   const debounced = useDebouncedCallback((formData: FormData) => {
-    const parsed = soundFormValidator.safeParse(formData);
+    const parsed = updateSoundValidator.safeParse(formData);
     if (parsed.success) {
       soundUpdate.mutate(formData);
     }
@@ -88,7 +94,12 @@ function SoundFormMutation({ id, url }: SoundFormProps) {
     >
       <Card>
         <CardHeader className="flex-row flex justify-between items-center gap-2">
-          <Input className="text-2xl" type="text" name="name" />
+          <Input
+            className="text-2xl"
+            type="text"
+            name="name"
+            defaultValue={initial.name}
+          />
           {isComplete ? (
             <p className="bg-green-300 text-xs text-green-950 px-2 py-1 rounded-full">
               ✓ Updated
@@ -100,7 +111,7 @@ function SoundFormMutation({ id, url }: SoundFormProps) {
           )}
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          <Input type="url" name="url" defaultValue={url ?? ""} />
+          <Input type="url" name="url" defaultValue={initial.url ?? ""} />
         </CardContent>
       </Card>
     </form>

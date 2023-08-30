@@ -7,12 +7,21 @@ const payload = z.object({
 });
 
 export const POST: APIRoute = async ({ request }) => {
-  const data = await request.json();
+  let data = {};
+  try {
+    data = await request.json();
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   const { boardId } = payload.parse(data);
 
   const [sound] = await db
     .insert(Sound)
     .values({
+      name: "New Sound",
       boardId,
     })
     .returning();

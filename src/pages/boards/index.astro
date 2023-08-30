@@ -6,17 +6,18 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 if (Astro.request.method === "POST") {
-  const [b] = await db.insert(Board).values({}).returning();
+  const [b] = await db.insert(Board).values({ name: "New Board" }).returning();
   return Astro.redirect(`/boards/${b.id}`);
 }
 
 const boards = await db
   .select({
     id: Board.id,
+    name: Board.name,
     count: sql`COUNT(${Sound.id})`.mapWith(Number),
   })
   .from(Board)
-  .innerJoin(Sound, eq(Sound.boardId, Board.id))
+  .leftJoin(Sound, eq(Sound.boardId, Board.id))
   .groupBy(sql`${Board.id}`);
 ---
 
@@ -27,7 +28,7 @@ const boards = await db
         <Card>
           <CardHeader>
             <h2>
-              <a href={`/boards/${b.id}`}>{b.id}</a>
+              <a href={`/boards/${b.id}`}>{b.name}</a>
             </h2>
           </CardHeader>
           <CardContent>
