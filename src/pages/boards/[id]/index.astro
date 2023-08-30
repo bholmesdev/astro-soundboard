@@ -1,7 +1,9 @@
 ---
 import { eq } from "drizzle-orm";
-import { Board, Sound, db } from "@/lib/schema";
+import { Board, Sound, db, soundCompleteValidator } from "@/lib/schema";
 import Layout from "./_Layout.astro";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 const { id } = Astro.params;
 
 const results = await db.select().from(Board).where(eq(Board.id, id!));
@@ -11,7 +13,20 @@ if (!board) throw new Error(`No entry with id ${id}`);
 ---
 
 <Layout name={board.name} boardId={board.id}>
-  <div class="grid grid-cols-3 gap-3">
-    <p>Preview!</p>
-  </div>
+  {
+    sounds
+      .filter((s) => {
+        return soundCompleteValidator.safeParse(s).success;
+      })
+      .map((s) => (
+        <Card>
+          <CardHeader className="flex-row flex justify-between items-center gap-2">
+            <h2 class="text-2xl">{s.name}</h2>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <p class="text-xs text-gray-500">{s.url}</p>
+          </CardContent>
+        </Card>
+      ))
+  }
 </Layout>

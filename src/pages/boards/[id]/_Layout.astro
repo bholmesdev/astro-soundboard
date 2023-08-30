@@ -1,6 +1,5 @@
 ---
 import MainLayout from "@/layouts/MainLayout.astro";
-import { slide } from "astro:transitions";
 
 type Props = { name: string; boardId: string };
 
@@ -34,7 +33,7 @@ const isPlay = currentPath === playPath;
         >
       </nav>
     </div>
-    <div transition:animate="slide">
+    <div transition:animate="slide" class="grid grid-cols-3 gap-3">
       <slot />
     </div>
   </main>
