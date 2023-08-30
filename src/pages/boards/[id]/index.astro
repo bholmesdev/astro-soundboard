@@ -1,0 +1,17 @@
+---
+import { eq } from "drizzle-orm";
+import { Board, Sound, db } from "@/lib/schema";
+import Layout from "./_Layout.astro";
+const { id } = Astro.params;
+
+const results = await db.select().from(Board).where(eq(Board.id, id!));
+const sounds = await db.select().from(Sound).where(eq(Sound.boardId, id!));
+const board = results[0];
+if (!board) throw new Error(`No entry with id ${id}`);
+---
+
+<Layout name={board.name} boardId={board.id}>
+  <div class="grid grid-cols-3 gap-3">
+    <p>Preview!</p>
+  </div>
+</Layout>

@@ -1,0 +1,49 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro";
+import { slide } from "astro:transitions";
+
+type Props = { name: string; boardId: string };
+
+const { name, boardId } = Astro.props;
+
+const playPath = new URL(`/boards/${boardId}`, Astro.url.origin).pathname;
+const editPath = new URL(`/boards/${boardId}/edit`, Astro.url.origin).pathname;
+const currentPath = Astro.url.pathname;
+
+const isPlay = currentPath === playPath;
+---
+
+<MainLayout>
+  <main class="m-auto max-w-screen-xl">
+    <div class="flex justify-between items-center">
+      <h1 class="text-4xl mb-4">{name}</h1>
+      <nav class="flex justify-end gap-3">
+        <a
+          class="relative flex items-center justify-center w-[var(--width)] h-[var(--toggle-size)] rounded-full bg-gray-800"
+          href={isPlay ? editPath : playPath}
+        >
+          <span
+            transition:name="toggle"
+            class:list={[
+              "absolute top-0 left-0 w-[var(--toggle-size)] h-[var(--toggle-size)] rounded-full bg-primary",
+              isPlay
+                ? "translate-x-0"
+                : "translate-x-[var(--toggle-x-translate)]",
+            ]}></span>
+          {isPlay ? "Play" : "Edit"}</a
+        >
+      </nav>
+    </div>
+    <div transition:animate="slide">
+      <slot />
+    </div>
+  </main>
+</MainLayout>
+
+<style>
+  a {
+    --width: 7rem;
+    --toggle-size: 2rem;
+    --toggle-x-translate: calc(var(--width) - var(--toggle-size));
+  }
+</style>
