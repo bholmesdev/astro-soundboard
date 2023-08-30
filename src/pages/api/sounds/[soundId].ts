@@ -3,8 +3,6 @@ import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 
 export const PUT: APIRoute = async ({ request, params }) => {
-  console.log("hey");
-
   const { soundId } = params;
   if (typeof soundId !== "string") {
     return new Response("Invalid soundId", { status: 400 });
