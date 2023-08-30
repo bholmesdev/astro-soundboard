@@ -3,30 +3,53 @@ import { eq } from "drizzle-orm";
 import { Board, Sound, db, soundCompleteValidator } from "@/lib/schema";
 import Layout from "./_Layout.astro";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import type { z } from "zod";
 const { id } = Astro.params;
 
 const results = await db.select().from(Board).where(eq(Board.id, id!));
-const sounds = await db.select().from(Sound).where(eq(Sound.boardId, id!));
+const soundsIncludingDrafts = await db
+  .select()
+  .from(Sound)
+  .where(eq(Sound.boardId, id!));
 const board = results[0];
 if (!board) throw new Error(`No entry with id ${id}`);
+
+const sounds = soundsIncludingDrafts.filter(
+  (s): s is z.infer<typeof soundCompleteValidator> => {
+    return soundCompleteValidator.safeParse(s).success;
+  }
+);
 ---
 
 <Layout name={board.name} boardId={board.id}>
   {
-    sounds
-      .filter((s) => {
-        return soundCompleteValidator.safeParse(s).success;
-      })
-      .map((s) => (
-        <Card>
-          <CardHeader className="flex-row flex justify-between items-center gap-2">
-            <h2 class="text-2xl">{s.name}</h2>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <p class="text-xs text-gray-500">{s.url}</p>
-          </CardContent>
-        </Card>
-      ))
+    sounds.map((s) => (
+      <Card>
+        <CardHeader className="flex-row flex justify-between items-center gap-2">
+          <h2 class="text-2xl">{s.name}</h2>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2">
+          <Button data-play id={s.url}>
+            Play
+            <audio hidden src={s.url}></audio>
+          </Button>
+          <p class="text-xs text-gray-500">{s.url}</p>
+        </CardContent>
+      </Card>
+    ))
   }
 </Layout>
+
+<script>
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.hasAttribute("data-play")) {
+      const audioElement = target.querySelector("audio");
+      if (!audioElement) return;
+
+      audioElement.currentTime = 0;
+      audioElement.play();
+    }
+  });
+</script>
