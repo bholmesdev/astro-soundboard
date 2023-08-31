@@ -5,24 +5,30 @@ import { auth } from "../lib/lucia";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import FormError from "@/components/FormError.astro";
+import { z } from "zod";
 
-let errorMessage: string | null = null;
+let formError: string | undefined;
+let usernameError: string | undefined;
+let passwordError: string | undefined;
+
+const signUpValidator = z.object({
+  username: z
+    .string()
+    .min(4)
+    .max(31)
+    .transform((s) => s.toLowerCase()),
+  password: z.string().min(6).max(255),
+});
 
 // check for form submissions
 if (Astro.request.method === "POST") {
   const formData = await Astro.request.formData();
-  const username = formData.get("username");
-  const password = formData.get("password");
-  // basic check
-  const validUsername =
-    typeof username === "string" &&
-    username.length >= 4 &&
-    username.length <= 31;
-  const validPassword =
-    typeof password === "string" &&
-    password.length >= 6 &&
-    password.length <= 255;
-  if (validUsername && validPassword) {
+  const parsed = signUpValidator.safeParse(
+    Object.fromEntries(formData.entries())
+  );
+  if (parsed.success) {
+    const { username, password } = parsed.data;
     try {
       const user = await auth.createUser({
         key: {
@@ -42,30 +48,36 @@ if (Astro.request.method === "POST") {
       return Astro.redirect("/boards/", 302);
     } catch (e) {
       if (isVercelUniqueConstraintViolation(e)) {
-        errorMessage = "Username already taken";
+        formError = "Username already taken";
       } else {
-        errorMessage = "An unknown error occurred";
+        formError = "An unknown error occurred";
       }
     }
   } else {
-    errorMessage = "Invalid input";
+    const error = parsed.error.flatten();
+    usernameError = error.fieldErrors.username?.join(" ");
+    passwordError = error.fieldErrors.password?.join(" ");
   }
 }
 ---
 
 <MainLayout>
-  <h1>Sign up</h1>
-  <form method="post">
-    <label for="username">Username</label>
-    <Input name="username" id="username" /><br />
-    <label for="password">Password</label>
-    <Input type="password" name="password" id="password" /><br />
-    <Button type="submit">Sign Up</Button>
-  </form>
-  {
-    errorMessage ? (
-      <p class="bg-red-200 px-2 py-1 rounded-md">{errorMessage}</p>
-    ) : null
-  }
-  <a href="/login">Sign in</a>
+  <main class="w-full max-w-[50ch] mx-auto flex flex-col">
+    <h1 class="text-3xl mb-6">Sign up</h1>
+    <form method="post" class="mb-3 flex flex-col gap-8">
+      {formError ? <FormError>{formError}</FormError> : null}
+      <div class="flex flex-col gap-2">
+        <label for="username">Username</label>
+        <Input name="username" id="username" />
+        {usernameError ? <FormError>{usernameError}</FormError> : null}
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="password">Password</label>
+        <Input type="password" name="password" id="password" />
+        {passwordError ? <FormError>{passwordError}</FormError> : null}
+      </div>
+      <Button type="submit">Sign Up</Button>
+    </form>
+    <a href="/login" class="underline text-center">Sign in</a>
+  </main>
 </MainLayout>
