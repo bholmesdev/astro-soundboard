@@ -2,6 +2,7 @@ import { lucia } from "lucia";
 import { astro } from "lucia/middleware";
 import { pg } from "@lucia-auth/adapter-postgresql";
 import { db } from "@vercel/postgres";
+import { github } from "@lucia-auth/oauth/providers";
 
 export const auth = lucia({
   env: import.meta.env.DEV ? "DEV" : "PROD",
@@ -16,6 +17,11 @@ export const auth = lucia({
       username: data.username,
     };
   },
+});
+
+export const githubAuth = github(auth, {
+  clientId: import.meta.env.GITHUB_CLIENT_ID,
+  clientSecret: import.meta.env.GITHUB_CLIENT_SECRET,
 });
 
 export type Auth = typeof auth;
