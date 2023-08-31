@@ -1,5 +1,12 @@
 import { sql } from "@vercel/postgres";
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  bigint,
+  varchar,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/vercel-postgres";
 import { v4 as uuidv4 } from "uuid";
 import { createSelectSchema } from "drizzle-zod";
@@ -20,6 +27,46 @@ export const Sound = pgTable("sound", {
   name: text("name").notNull(),
   url: text("url"),
   boardId: uuid("board_id").references(() => Board.id),
+});
+
+/* LUCIA TABLES */
+
+export const user = pgTable("auth_user", {
+  id: varchar("id", {
+    length: 15, // change this when using custom user ids
+  }).primaryKey(),
+  username: text("username").unique().notNull(),
+});
+
+export const session = pgTable("user_session", {
+  id: varchar("id", {
+    length: 128,
+  }).primaryKey(),
+  userId: varchar("user_id", {
+    length: 15,
+  })
+    .notNull()
+    .references(() => user.id),
+  activeExpires: bigint("active_expires", {
+    mode: "number",
+  }).notNull(),
+  idleExpires: bigint("idle_expires", {
+    mode: "number",
+  }).notNull(),
+});
+
+export const key = pgTable("user_key", {
+  id: varchar("id", {
+    length: 255,
+  }).primaryKey(),
+  userId: varchar("user_id", {
+    length: 15,
+  })
+    .notNull()
+    .references(() => user.id),
+  hashedPassword: varchar("hashed_password", {
+    length: 255,
+  }),
 });
 
 export const soundValidator = createSelectSchema(Sound);

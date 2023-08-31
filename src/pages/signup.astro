@@ -1,0 +1,71 @@
+---
+// src/pages/signup.astro
+import { isVercelUniqueConstraintViolation } from "@/lib/utils";
+import { auth } from "../lib/lucia";
+import MainLayout from "@/layouts/MainLayout.astro";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+let errorMessage: string | null = null;
+
+// check for form submissions
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const username = formData.get("username");
+  const password = formData.get("password");
+  // basic check
+  const validUsername =
+    typeof username === "string" &&
+    username.length >= 4 &&
+    username.length <= 31;
+  const validPassword =
+    typeof password === "string" &&
+    password.length >= 6 &&
+    password.length <= 255;
+  if (validUsername && validPassword) {
+    try {
+      const user = await auth.createUser({
+        key: {
+          providerId: "username", // auth method
+          providerUserId: username.toLowerCase(), // unique id when using "username" auth method
+          password, // hashed by Lucia
+        },
+        attributes: {
+          username,
+        },
+      });
+      const session = await auth.createSession({
+        userId: user.userId,
+        attributes: {},
+      });
+      Astro.locals.auth.setSession(session);
+      return Astro.redirect("/boards/", 302);
+    } catch (e) {
+      if (isVercelUniqueConstraintViolation(e)) {
+        errorMessage = "Username already taken";
+      } else {
+        errorMessage = "An unknown error occurred";
+      }
+    }
+  } else {
+    errorMessage = "Invalid input";
+  }
+}
+---
+
+<MainLayout>
+  <h1>Sign up</h1>
+  <form method="post">
+    <label for="username">Username</label>
+    <Input name="username" id="username" /><br />
+    <label for="password">Password</label>
+    <Input type="password" name="password" id="password" /><br />
+    <Button type="submit">Sign Up</Button>
+  </form>
+  {
+    errorMessage ? (
+      <p class="bg-red-200 px-2 py-1 rounded-md">{errorMessage}</p>
+    ) : null
+  }
+  <a href="/login">Sign in</a>
+</MainLayout>

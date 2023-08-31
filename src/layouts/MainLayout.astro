@@ -1,6 +1,8 @@
 ---
 import "@/styles/globals.css";
 import { ViewTransitions } from "astro:transitions";
+
+const session = await Astro.locals.auth.validate();
 ---
 
 <html lang="en">
@@ -15,6 +17,7 @@ import { ViewTransitions } from "astro:transitions";
   <body class="dark" transition:animate="none">
     <nav>
       <a href="/">Home</a>
+      {session ? <pre>{JSON.stringify(session.user, null, 2)}</pre> : null}
     </nav>
     <slot />
   </body>
