@@ -1,8 +1,10 @@
 ---
+import { Button, buttonVariants } from "@/components/ui/button";
 import "@/styles/globals.css";
 import { ViewTransitions } from "astro:transitions";
 
 const session = await Astro.locals.auth.validate();
+const user = session?.user;
 ---
 
 <html lang="en">
@@ -15,9 +17,23 @@ const session = await Astro.locals.auth.validate();
     <ViewTransitions />
   </head>
   <body class="dark" transition:animate="none">
-    <nav>
-      <a href="/">Home</a>
-      {session ? <pre>{JSON.stringify(session.user, null, 2)}</pre> : null}
+    <nav class="bg-card py-2 mb-4">
+      <div class="flex justify-between items-center max-w-screen-xl mx-auto">
+        <a href="/boards/">Boards</a>
+        {
+          user ? (
+            <form method="POST" action="/logout">
+              <Button type="submit" variant="secondary">
+                {user.username}
+              </Button>
+            </form>
+          ) : (
+            <a class={buttonVariants({ variant: "outline" })} href="/login">
+              Login
+            </a>
+          )
+        }
+      </div>
     </nav>
     <slot />
   </body>
