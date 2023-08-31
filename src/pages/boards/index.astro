@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 if (Astro.request.method === "POST") {
   const [b] = await db.insert(Board).values({ name: "New Board" }).returning();
-  return Astro.redirect(`/boards/${b.id}`);
+  return Astro.redirect(`/boards/${b.id}/edit`);
 }
 
 const boards = await db
@@ -22,25 +22,27 @@ const boards = await db
 ---
 
 <MainLayout>
-  <div class="grid grid-cols-3 gap-3 max-w-screen-xl m-auto">
-    {
-      boards.map((b) => (
-        <Card>
-          <CardHeader>
-            <h2>
-              <a href={`/boards/${b.id}`}>{b.name}</a>
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <p>
-              {b.count} sound{b.count === 1 ? "" : "s"}
-            </p>
-          </CardContent>
-        </Card>
-      ))
-    }
+  <div class="max-w-screen-xl m-auto flex flex-col gap-3">
+    <form method="POST">
+      <Button type="submit">New board +</Button>
+    </form>
+    <div class="grid grid-cols-3 gap-3">
+      {
+        boards.map((b) => (
+          <Card>
+            <CardHeader>
+              <h2>
+                <a href={`/boards/${b.id}`}>{b.name}</a>
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <p>
+                {b.count} sound{b.count === 1 ? "" : "s"}
+              </p>
+            </CardContent>
+          </Card>
+        ))
+      }
+    </div>
   </div>
-  <form method="POST">
-    <Button type="submit">Create board +</Button>
-  </form>
 </MainLayout>
