@@ -12,6 +12,7 @@ export const auth = lucia({
     key: "user_key",
     session: "user_session",
   }),
+  csrfProtection: import.meta.env.PROD,
   getUserAttributes(data) {
     return {
       username: data.username,
