@@ -1,25 +1,16 @@
 ---
-import { isVercelUniqueConstraintViolation } from "@/lib/utils";
 import { auth } from "../lib/lucia";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FormError from "@/components/FormError.astro";
-import { z } from "zod";
+import { signUpValidator } from "./signup.astro";
+import { LuciaError } from "lucia";
 import LoginLayout from "./_LoginLayout.astro";
 
 let formError: string | undefined;
 let usernameError: string | undefined;
 let passwordError: string | undefined;
-
-export const signUpValidator = z.object({
-  username: z
-    .string()
-    .min(4)
-    .max(31)
-    .transform((s) => s.toLowerCase()),
-  password: z.string().min(6).max(255),
-});
 
 if (Astro.request.method === "POST") {
   const formData = await Astro.request.formData();
@@ -29,16 +20,11 @@ if (Astro.request.method === "POST") {
   if (parsed.success) {
     const { username, password } = parsed.data;
     try {
-      const user = await auth.createUser({
-        key: {
-          providerId: "username",
-          providerUserId: username,
-          password, // hashed by Lucia
-        },
-        attributes: {
-          username,
-        },
-      });
+      const user = await auth.useKey(
+        "username",
+        username.toLowerCase(),
+        password
+      );
       const session = await auth.createSession({
         userId: user.userId,
         attributes: {},
@@ -46,8 +32,12 @@ if (Astro.request.method === "POST") {
       Astro.locals.auth.setSession(session);
       return Astro.redirect("/boards/", 302);
     } catch (e) {
-      if (isVercelUniqueConstraintViolation(e)) {
-        formError = "Username already taken";
+      if (
+        e instanceof LuciaError &&
+        (e.message === "AUTH_INVALID_KEY_ID" ||
+          e.message === "AUTH_INVALID_PASSWORD")
+      ) {
+        formError = "Incorrect username or password";
       } else {
         formError = "An unknown error occurred";
       }
@@ -63,7 +53,7 @@ if (Astro.request.method === "POST") {
 <MainLayout>
   <LoginLayout>
     <main class="w-full max-w-[50ch] mx-auto flex flex-col">
-      <h1 class="text-3xl mb-6">Sign up</h1>
+      <h1 class="text-3xl mb-6">Sign in</h1>
       <form method="post" class="mb-3 flex flex-col gap-8">
         {formError ? <FormError>{formError}</FormError> : null}
         <fieldset class="flex flex-col gap-2">
@@ -76,9 +66,9 @@ if (Astro.request.method === "POST") {
           <Input type="password" name="password" id="password" />
           {passwordError ? <FormError>{passwordError}</FormError> : null}
         </fieldset>
-        <Button type="submit">Sign Up</Button>
+        <Button type="submit">Sign In</Button>
       </form>
-      <a href="/login" class="underline text-center">Sign in</a>
+      <a href="/signup" class="underline text-center">Sign up</a>
     </main>
   </LoginLayout>
 </MainLayout>
