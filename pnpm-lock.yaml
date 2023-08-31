@@ -14,6 +14,9 @@ dependencies:
   '@astrojs/vercel':
     specifier: 4.0.0-rc.5
     version: 4.0.0-rc.5(astro@3.0.0-rc.8)
+  '@lucia-auth/adapter-postgresql':
+    specifier: ^2.0.1
+    version: 2.0.1(lucia@2.4.1)
   '@radix-ui/react-icons':
     specifier: ^1.3.0
     version: 1.3.0(react@18.2.0)
@@ -47,6 +50,9 @@ dependencies:
   drizzle-zod:
     specifier: ^0.5.1
     version: 0.5.1(drizzle-orm@0.28.5)(zod@3.22.2)
+  lucia:
+    specifier: ^2.4.1
+    version: 2.4.1
   react:
     specifier: ^18.2.0
     version: 18.2.0
@@ -953,6 +959,21 @@ packages:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
+    dev: false
+
+  /@lucia-auth/adapter-postgresql@2.0.1(lucia@2.4.1):
+    resolution: {integrity: sha512-HrgyCsHXEWMD3oF2vSzbqucwGR9zCNvsV5MTV/J3EkiTHskjJXRoVqIoOONeLsdBTy+nIciyoWNMAYe9LJj3tA==}
+    peerDependencies:
+      lucia: ^2.0.0
+      pg: ^8.8.0
+      postgres: ^3.3.0
+    peerDependenciesMeta:
+      pg:
+        optional: true
+      postgres:
+        optional: true
+    dependencies:
+      lucia: 2.4.1
     dev: false
 
   /@mapbox/node-pre-gyp@1.0.11:
@@ -3998,6 +4019,10 @@ packages:
     dependencies:
       es5-ext: 0.10.62
     dev: true
+
+  /lucia@2.4.1:
+    resolution: {integrity: sha512-MM5b6LLT//a8qR02490ShwYvsTdlAj4WoFP+Ok9NE31zwBm0dM9lK9TivHwAb69eka71OAcnZeaBi1CBfHtwZA==}
+    dev: false
 
   /lusca@1.6.1:
     resolution: {integrity: sha512-+JzvUMH/rsE/4XfHdDOl70bip0beRcHSviYATQM0vtls59uVtdn1JMu4iD7ZShBpAmFG8EnaA+PrYG9sECMIOQ==}
