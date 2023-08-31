@@ -1,5 +1,4 @@
 ---
-// src/pages/signup.astro
 import { isVercelUniqueConstraintViolation } from "@/lib/utils";
 import { auth } from "../lib/lucia";
 import MainLayout from "@/layouts/MainLayout.astro";
@@ -21,7 +20,6 @@ const signUpValidator = z.object({
   password: z.string().min(6).max(255),
 });
 
-// check for form submissions
 if (Astro.request.method === "POST") {
   const formData = await Astro.request.formData();
   const parsed = signUpValidator.safeParse(
@@ -32,8 +30,8 @@ if (Astro.request.method === "POST") {
     try {
       const user = await auth.createUser({
         key: {
-          providerId: "username", // auth method
-          providerUserId: username.toLowerCase(), // unique id when using "username" auth method
+          providerId: "username",
+          providerUserId: username,
           password, // hashed by Lucia
         },
         attributes: {
@@ -66,16 +64,16 @@ if (Astro.request.method === "POST") {
     <h1 class="text-3xl mb-6">Sign up</h1>
     <form method="post" class="mb-3 flex flex-col gap-8">
       {formError ? <FormError>{formError}</FormError> : null}
-      <div class="flex flex-col gap-2">
+      <fieldset class="flex flex-col gap-2">
         <label for="username">Username</label>
         <Input name="username" id="username" />
         {usernameError ? <FormError>{usernameError}</FormError> : null}
-      </div>
-      <div class="flex flex-col gap-2">
+      </fieldset>
+      <fieldset class="flex flex-col gap-2">
         <label for="password">Password</label>
         <Input type="password" name="password" id="password" />
         {passwordError ? <FormError>{passwordError}</FormError> : null}
-      </div>
+      </fieldset>
       <Button type="submit">Sign Up</Button>
     </form>
     <a href="/login" class="underline text-center">Sign in</a>
