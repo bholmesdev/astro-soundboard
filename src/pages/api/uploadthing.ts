@@ -14,16 +14,26 @@ const handlers = createServerHandler({
   },
 });
 
-export const GET: APIRoute = async ({ request }) => handlers.GET({ request });
-export const POST: APIRoute = async ({ request }) => handlers.POST({ request });
+export const GET: APIRoute = async ({ request, locals }) => {
+  const session = await locals.auth.validate();
+  if (!session) return new Response(null, { status: 401 });
+  return handlers.GET({ request });
+};
+export const POST: APIRoute = async ({ request, locals }) => {
+  const session = await locals.auth.validate();
+  if (!session) return new Response(null, { status: 401 });
+  return handlers.POST({ request });
+};
 
 const deleteValidator = z.object({
   key: z.string(),
   soundId: z.string().uuid(),
 });
 
-export const DELETE: APIRoute = async ({ request }) => {
-  console.log("started...");
+export const DELETE: APIRoute = async ({ request, locals }) => {
+  const session = await locals.auth.validate();
+  if (!session) return new Response(null, { status: 401 });
+
   if (import.meta.env.DEV) {
     process.env.UPLOADTHING_APPID = import.meta.env.UPLOADTHING_APPID;
     process.env.UPLOADTHING_SECRET = import.meta.env.UPLOADTHING_SECRET;
@@ -44,8 +54,6 @@ export const DELETE: APIRoute = async ({ request }) => {
     })
     .where(eq(Sound.id, soundId))
     .returning();
-
-  console.log("updated!");
 
   if (!updated.length) {
     return new Response(`No sound with id ${soundId}`, { status: 400 });
