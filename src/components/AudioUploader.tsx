@@ -43,7 +43,6 @@ export function AudioUploader({
       ) : (
         <UploadButton<SoundUploadRouter>
           endpoint="sound"
-          className={buttonVariants({ variant: "outline" })}
           onClientUploadComplete={(files) => {
             const uploaded = files?.[0];
             if (!uploaded) return;
