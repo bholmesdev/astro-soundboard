@@ -1,4 +1,5 @@
 ---
+import Logo from "@/components/Logo.astro";
 import { Button, buttonVariants } from "@/components/ui/button";
 import "@/styles/globals.css";
 import { ViewTransitions } from "astro:transitions";
@@ -19,7 +20,7 @@ const user = session?.user;
   <body class="dark" transition:animate="none">
     <nav class="bg-card py-2 mb-4">
       <div class="flex justify-between items-center max-w-screen-xl mx-auto">
-        <a href="/boards/">Boards</a>
+        <a href="/boards/"><Logo /></a>
         {
           user ? (
             <form method="POST" action="/logout">
