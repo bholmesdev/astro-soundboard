@@ -32,6 +32,7 @@ export const soundValidator = z.object({
 export const soundCompleteValidator = soundValidator.extend({
   url: z.string().url(),
   name: z.string().nonempty(),
+  boardId: z.string().uuid(),
 });
 
 export const updateSoundValidator = zfd.formData({
