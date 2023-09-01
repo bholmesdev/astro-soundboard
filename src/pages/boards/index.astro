@@ -5,8 +5,14 @@ import MainLayout from "@/layouts/MainLayout.astro";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+const session = await Astro.locals.auth.validate();
+if (!session) return Astro.redirect("/login");
+
 if (Astro.request.method === "POST") {
-  const [b] = await db.insert(Board).values({ name: "New Board" }).returning();
+  const [b] = await db
+    .insert(Board)
+    .values({ name: "New Board", userId: session.user.userId })
+    .returning();
   return Astro.redirect(`/boards/${b.id}/edit`);
 }
 
@@ -17,6 +23,7 @@ const boards = await db
     count: sql`COUNT(${Sound.id})`.mapWith(Number),
   })
   .from(Board)
+  .where(eq(Board.userId, session.user.userId))
   .leftJoin(Sound, eq(Sound.boardId, Board.id))
   .groupBy(sql`${Board.id}`);
 ---
