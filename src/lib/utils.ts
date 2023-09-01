@@ -29,7 +29,6 @@ export const soundValidator = z.object({
   fileUrl: z.string().url().nullable(),
   fileName: z.string().nullable(),
   fileKey: z.string().nullable(),
-  boardId: z.string().uuid(),
 });
 
 export const soundCompleteValidator = soundValidator.extend({
@@ -37,6 +36,7 @@ export const soundCompleteValidator = soundValidator.extend({
   fileName: z.string(),
   fileKey: z.string(),
   name: z.string().nonempty(),
+  boardId: z.string().uuid(),
 });
 
 export const updateSoundValidator = zfd.formData({
