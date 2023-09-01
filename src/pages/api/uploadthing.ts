@@ -5,12 +5,18 @@ import { z } from "zod";
 import { Sound, db } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
+const callbackUrl = new URL(
+  "/api/uploadthing",
+  import.meta.env.DEV ? "http://localhost:3000" : import.meta.env.SITE
+).href;
+console.log(callbackUrl);
+
 const handlers = createServerHandler({
   router: uploadRouter,
   config: {
     uploadthingId: import.meta.env.UPLOADTHING_APPID,
     uploadthingSecret: import.meta.env.UPLOADTHING_SECRET,
-    callbackUrl: "http://localhost:3000/api/uploadthing",
+    callbackUrl,
   },
 });
 
