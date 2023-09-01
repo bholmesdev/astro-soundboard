@@ -8,8 +8,6 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/vercel-postgres";
-import { createSelectSchema } from "drizzle-zod";
-import { z } from "zod";
 import { randomUUID } from "node:crypto";
 
 const USER_ID_LEN = 15;
@@ -68,13 +66,6 @@ export const Key = pgTable("user_key", {
   hashedPassword: varchar("hashed_password", {
     length: 255,
   }),
-});
-
-export const soundValidator = createSelectSchema(Sound);
-
-export const soundCompleteValidator = createSelectSchema(Sound).extend({
-  url: z.string().url(),
-  name: z.string().nonempty(),
 });
 
 export const db = drizzle(sql);

@@ -10,16 +10,17 @@ import {
 import { useDebouncedCallback } from "@/lib/debounce";
 import {
   soundCompleteValidator,
-  type Sound,
+  updateSoundValidator,
   soundValidator,
-} from "@/lib/schema";
-import { updateSoundValidator } from "@/pages/api/sounds/[soundId]";
+} from "@/lib/utils";
+import { z } from "zod";
 
 const queryClient = new QueryClient();
+type Sound = z.infer<typeof soundValidator>;
 
 type SoundsFormProps = {
   boardId: string;
-  initialSounds: (typeof Sound.$inferSelect)[];
+  initialSounds: Sound[];
 };
 
 export function Sounds(props: SoundsFormProps) {
@@ -61,9 +62,7 @@ function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
   );
 }
 
-type SoundFormProps = Pick<typeof Sound.$inferSelect, "id" | "name" | "url">;
-
-function SoundFormMutation(initial: SoundFormProps) {
+function SoundFormMutation(initial: Sound) {
   const soundUpdate = useMutation({
     mutationFn: async (formData: FormData) => {
       return fetch(`/api/sounds/${initial.id}`, {
@@ -74,8 +73,7 @@ function SoundFormMutation(initial: SoundFormProps) {
   });
 
   const isComplete =
-    soundUpdate.isSuccess ||
-    soundCompleteValidator.omit({ boardId: true }).safeParse(initial).success;
+    soundUpdate.isSuccess || soundCompleteValidator.safeParse(initial).success;
 
   const debounced = useDebouncedCallback((formData: FormData) => {
     const parsed = updateSoundValidator.safeParse(formData);

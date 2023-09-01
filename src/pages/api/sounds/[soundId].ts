@@ -1,15 +1,16 @@
-import { Sound, db } from "@/lib/schema";
+import { Board, Sound, db } from "@/lib/schema";
+import { updateSoundValidator } from "@/lib/utils";
 import type { APIRoute } from "astro";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
-import { zfd } from "zod-form-data";
+import { and, eq, exists } from "drizzle-orm";
 
-export const updateSoundValidator = zfd.formData({
-  name: zfd.text(z.string().nonempty()),
-  url: zfd.text(z.string().url()),
-});
+export const PUT: APIRoute = async ({ request, params, locals }) => {
+  const session = await locals.auth.validate();
+  if (!session) {
+    return new Response("Unauthorized", {
+      status: 401,
+    });
+  }
 
-export const PUT: APIRoute = async ({ request, params }) => {
   const { soundId } = params;
   if (typeof soundId !== "string") {
     return new Response("Invalid soundId", { status: 400 });
@@ -21,7 +22,21 @@ export const PUT: APIRoute = async ({ request, params }) => {
     return new Response(JSON.stringify(parsed.error), { status: 400 });
   }
 
-  await db.update(Sound).set(parsed.data).where(eq(Sound.id, soundId));
+  const boardQuery = db
+    .select({ boardId: Board.id })
+    .from(Sound)
+    .innerJoin(Board, eq(Sound.boardId, Board.id))
+    .where(and(eq(Board.userId, session.user.userId), eq(Sound.id, soundId)));
+
+  const updated = await db
+    .update(Sound)
+    .set(parsed.data)
+    .where(and(eq(Sound.id, soundId), exists(boardQuery)))
+    .returning({ id: Sound.id });
+
+  if (updated.length === 0) {
+    return new Response("Not found", { status: 404 });
+  }
 
   return new Response(JSON.stringify({ success: true }));
 };
