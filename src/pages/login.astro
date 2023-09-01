@@ -1,15 +1,31 @@
 ---
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import MainLayout from "@/layouts/MainLayout.astro";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 const session = await Astro.locals.auth.validate();
 if (session) return Astro.redirect("/boards/", 302);
 ---
 
 <MainLayout>
-  <main class="w-full max-w-[50ch] mx-auto flex flex-col">
-    <h1 class="text-3xl mb-6">Sign in</h1>
-    <a data-astro-reload href="/login/github" class="underline text-center"
-      >Sign in with GitHub</a
-    >
+  <main class="w-full max-w-[50ch] mx-auto flex flex-col text-center">
+    <Card>
+      <CardHeader>
+        <h1 class="text-3xl mb-6">
+          Join the <strong class="text-primary">WOMP</strong>
+           squad
+        </h1>
+      </CardHeader>
+      <CardContent>
+        <a
+          class={buttonVariants({ variant: "secondary" })}
+          data-astro-reload
+          href="/login/github"
+          class="underline text-center"
+          >Sign in with GitHub <GitHubLogoIcon className="ml-2" /></a
+        >
+      </CardContent>
+    </Card>
   </main>
 </MainLayout>
