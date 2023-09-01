@@ -1,16 +1,26 @@
 ---
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Board, Sound, db } from "@/lib/schema";
 import Layout from "./_Layout.astro";
 import { Sounds } from "../_components/SoundForm";
-const { id } = Astro.params;
 
-const results = await db.select().from(Board).where(eq(Board.id, id!));
-const sounds = await db.select().from(Sound).where(eq(Sound.boardId, id!));
-const board = results[0];
-if (!board) throw new Error(`No entry with id ${id}`);
+const { id } = Astro.params;
+if (!id) return Astro.redirect("/boards/");
+
+const session = await Astro.locals.auth.validate();
+if (!session) return Astro.redirect("/boards/");
+
+const boards = await db
+  .select()
+  .from(Board)
+  .where(and(eq(Board.id, id), eq(Board.userId, session.user.userId)));
+
+const board = boards[0];
+if (!board) return Astro.redirect("/boards/");
+
+const sounds = await db.select().from(Sound).where(eq(Sound.boardId, id));
 ---
 
-<Layout name={board.name} boardId={board.id}>
+<Layout {board}>
   <Sounds client:load initialSounds={sounds} boardId={board.id} />
 </Layout>

@@ -1,36 +1,44 @@
 ---
 import MainLayout from "@/layouts/MainLayout.astro";
+import type { Board } from "@/lib/schema";
 
-type Props = { name: string; boardId: string };
+type Props = { board: typeof Board.$inferSelect };
 
-const { name, boardId } = Astro.props;
+const { board } = Astro.props;
 
-const playPath = new URL(`/boards/${boardId}`, Astro.url.origin).pathname;
-const editPath = new URL(`/boards/${boardId}/edit`, Astro.url.origin).pathname;
+const playPath = new URL(`/boards/${board.id}`, Astro.url.origin).pathname;
+const editPath = new URL(`/boards/${board.id}/edit`, Astro.url.origin).pathname;
 const currentPath = Astro.url.pathname;
 
+const session = await Astro.locals.auth.validate();
+const isOwner = session?.user?.userId === board.userId;
 const isPlay = currentPath === playPath;
 ---
 
 <MainLayout>
   <main class="m-auto max-w-screen-xl">
     <div class="flex justify-between items-center">
-      <h1 class="text-4xl mb-4">{name}</h1>
+      <h1 class="text-4xl mb-4">{board.name}</h1>
       <nav class="flex justify-end gap-3">
-        <a
-          class="relative flex items-center justify-center w-[var(--width)] h-[var(--toggle-size)] rounded-full bg-gray-800"
-          href={isPlay ? editPath : playPath}
-        >
-          <span
-            transition:name="toggle"
-            class:list={[
-              "absolute top-0 left-0 w-[var(--toggle-size)] h-[var(--toggle-size)] rounded-full bg-primary",
-              isPlay
-                ? "translate-x-[var(--toggle-x-translate)]"
-                : "translate-x-0",
-            ]}></span>
-          {isPlay ? "Play" : "Edit"}</a
-        >
+        {
+          isOwner ? (
+            <a
+              class="relative flex items-center justify-center w-[var(--width)] h-[var(--toggle-size)] rounded-full bg-gray-800"
+              href={isPlay ? editPath : playPath}
+            >
+              <span
+                transition:name="toggle"
+                class:list={[
+                  "absolute top-0 left-0 w-[var(--toggle-size)] h-[var(--toggle-size)] rounded-full bg-primary",
+                  isPlay
+                    ? "translate-x-[var(--toggle-x-translate)]"
+                    : "translate-x-0",
+                ]}
+              />
+              {isPlay ? "Play" : "Edit"}
+            </a>
+          ) : null
+        }
       </nav>
     </div>
     <div transition:animate="slide" class="grid grid-cols-3 gap-3">
