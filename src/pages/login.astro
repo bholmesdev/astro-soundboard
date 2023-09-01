@@ -1,8 +1,8 @@
 ---
 import MainLayout from "@/layouts/MainLayout.astro";
 
-// const session = await Astro.locals.auth.validate();
-// if (session) return Astro.redirect("/", 302);
+const session = await Astro.locals.auth.validate();
+if (session) return Astro.redirect("/boards/", 302);
 ---
 
 <MainLayout>
