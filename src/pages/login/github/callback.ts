@@ -3,7 +3,7 @@ import { OAuthRequestError } from "@lucia-auth/oauth";
 
 import type { APIRoute } from "astro";
 
-export const get: APIRoute = async (context) => {
+export const GET: APIRoute = async (context) => {
   const storedState = context.cookies.get("github_oauth_state")?.value;
   if (!storedState) return context.redirect("/login", 302);
 

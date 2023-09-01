@@ -3,7 +3,7 @@ import { githubAuth } from "@/lib/lucia";
 
 import type { APIRoute } from "astro";
 
-export const get: APIRoute = async (context) => {
+export const GET: APIRoute = async (context) => {
   const [url, state] = await githubAuth.getAuthorizationUrl();
   // store state
   context.cookies.set("github_oauth_state", state, {
