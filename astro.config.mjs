@@ -13,6 +13,9 @@ export default defineConfig({
       applyBaseStyles: false,
     }),
   ],
+  redirects: {
+    "/": "/boards/",
+  },
   output: "server",
   adapter: vercel(),
   vite: {
