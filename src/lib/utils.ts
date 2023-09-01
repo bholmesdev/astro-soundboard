@@ -26,16 +26,22 @@ export function isVercelUniqueConstraintViolation(
 export const soundValidator = z.object({
   id: z.string().uuid(),
   name: z.string(),
-  url: z.string().url().nullable(),
+  fileUrl: z.string().url().nullable(),
+  fileName: z.string().nullable(),
+  fileKey: z.string().nullable(),
+  boardId: z.string().uuid(),
 });
 
 export const soundCompleteValidator = soundValidator.extend({
-  url: z.string().url(),
+  fileUrl: z.string().url(),
+  fileName: z.string(),
+  fileKey: z.string(),
   name: z.string().nonempty(),
-  boardId: z.string().uuid(),
 });
 
 export const updateSoundValidator = zfd.formData({
   name: zfd.text(z.string().nonempty()),
-  url: zfd.text(z.string().url()),
+  fileKey: zfd.text(z.string().nonempty()),
+  fileName: zfd.text(z.string().nonempty()),
+  fileUrl: zfd.text(z.string().url()),
 });

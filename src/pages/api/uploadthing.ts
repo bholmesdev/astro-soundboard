@@ -1,6 +1,9 @@
 import type { APIRoute } from "astro";
-import { createServerHandler } from "uploadthing/server";
+import { createServerHandler, utapi } from "uploadthing/server";
 import { uploadRouter } from "@/lib/uploadthing";
+import { z } from "zod";
+import { Sound, db } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 
 const handlers = createServerHandler({
   router: uploadRouter,
@@ -13,3 +16,45 @@ const handlers = createServerHandler({
 
 export const GET: APIRoute = async ({ request }) => handlers.GET({ request });
 export const POST: APIRoute = async ({ request }) => handlers.POST({ request });
+
+const deleteValidator = z.object({
+  key: z.string(),
+  soundId: z.string().uuid(),
+});
+
+export const DELETE: APIRoute = async ({ request }) => {
+  console.log("started...");
+  if (import.meta.env.DEV) {
+    process.env.UPLOADTHING_APPID = import.meta.env.UPLOADTHING_APPID;
+    process.env.UPLOADTHING_SECRET = import.meta.env.UPLOADTHING_SECRET;
+  }
+
+  const parsed = deleteValidator.safeParse(await request.json());
+  if (!parsed.success) {
+    return new Response("Invalid request", { status: 400 });
+  }
+
+  const { key, soundId } = parsed.data;
+  const updated = await db
+    .update(Sound)
+    .set({
+      fileKey: null,
+      fileUrl: null,
+      fileName: null,
+    })
+    .where(eq(Sound.id, soundId))
+    .returning();
+
+  console.log("updated!");
+
+  if (!updated.length) {
+    return new Response(`No sound with id ${soundId}`, { status: 400 });
+  }
+
+  const { success } = await utapi.deleteFiles(key);
+  if (!success) {
+    return new Response("Uploadthing failed to delete files", { status: 500 });
+  }
+
+  return new Response(null, { status: 200 });
+};

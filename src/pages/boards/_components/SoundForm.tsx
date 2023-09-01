@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import {
   QueryClient,
   QueryClientProvider,
@@ -14,6 +14,7 @@ import {
   soundValidator,
 } from "@/lib/utils";
 import { z } from "zod";
+import { AudioUploader } from "@/components/AudioUploader";
 
 const queryClient = new QueryClient();
 type Sound = z.infer<typeof soundValidator>;
@@ -71,11 +72,13 @@ function SoundFormMutation(initial: Sound) {
       });
     },
   });
+  const formRef = useRef<HTMLFormElement>(null);
 
   const isComplete =
     soundUpdate.isSuccess || soundCompleteValidator.safeParse(initial).success;
 
   const debounced = useDebouncedCallback((formData: FormData) => {
+    console.log("debounced", Object.fromEntries(formData.entries()));
     const parsed = updateSoundValidator.safeParse(formData);
     if (parsed.success) {
       soundUpdate.mutate(formData);
@@ -84,7 +87,9 @@ function SoundFormMutation(initial: Sound) {
 
   return (
     <form
+      ref={formRef}
       onChange={(e) => {
+        console.log(e);
         e.preventDefault();
         const data = new FormData(e.currentTarget as HTMLFormElement);
         debounced(data);
@@ -110,7 +115,26 @@ function SoundFormMutation(initial: Sound) {
           )}
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          <Input type="url" name="url" defaultValue={initial.url ?? ""} />
+          <AudioUploader
+            soundId={initial.id}
+            uploadedFile={
+              initial.fileName && initial.fileUrl && initial.fileKey
+                ? {
+                    name: initial.fileName,
+                    url: initial.fileUrl,
+                    key: initial.fileKey,
+                  }
+                : undefined
+            }
+            onUpload={(f) => {
+              if (!formRef.current) return;
+              const formData = new FormData(formRef.current);
+              formData.set("fileKey", f.key);
+              formData.set("fileName", f.name);
+              formData.set("fileUrl", f.url);
+              debounced(formData);
+            }}
+          />
         </CardContent>
       </Card>
     </form>

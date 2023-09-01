@@ -31,11 +31,11 @@ const sounds = soundsIncludingDrafts.filter(
           <h2 class="text-2xl">{s.name}</h2>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          <Button data-play id={s.url}>
+          <Button data-play id={s.fileUrl}>
             Play
-            <audio hidden src={s.url} />
+            <audio hidden src={s.fileUrl} />
           </Button>
-          <p class="text-xs text-gray-500">{s.url}</p>
+          <p class="text-xs text-gray-500">{s.fileUrl}</p>
         </CardContent>
       </Card>
     ))

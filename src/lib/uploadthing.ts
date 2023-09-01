@@ -4,17 +4,13 @@ import type { FileRouter } from "uploadthing/server";
 const f = createUploadthing();
 
 export const uploadRouter = {
-  videoAndImage: f({
-    image: {
-      maxFileSize: "4MB",
-      maxFileCount: 4,
-    },
-    video: {
-      maxFileSize: "16MB",
+  sound: f({
+    audio: {
+      maxFileSize: "2MB",
+      maxFileCount: 1,
     },
   })
     .middleware(({ req }) => {
-      // TODO: auth
       return {};
     })
     .onUploadComplete((data) => {
@@ -22,4 +18,4 @@ export const uploadRouter = {
     }),
 } satisfies FileRouter;
 
-export type OurFileRouter = typeof uploadRouter;
+export type SoundUploadRouter = typeof uploadRouter;

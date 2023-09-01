@@ -28,7 +28,9 @@ export const Sound = pgTable("sound", {
     .primaryKey()
     .$default(() => randomUUID()),
   name: text("name").notNull(),
-  url: text("url"),
+  fileUrl: text("file_url"),
+  fileName: text("file_name"),
+  fileKey: text("file_key"),
   boardId: uuid("board_id").references(() => Board.id),
 });
 
