@@ -1,7 +1,9 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
+import { UploadAudio } from "@/components/UploadAudio";
 ---
 
 <MainLayout>
   <h1>Hello Astro!</h1>
+  <UploadAudio client:only="react" />
 </MainLayout>
