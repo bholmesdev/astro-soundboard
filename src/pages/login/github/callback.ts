@@ -30,7 +30,6 @@ export const get: APIRoute = async (context) => {
     };
 
     const user = await getUser();
-    console.log("user", user);
     const session = await auth.createSession({
       userId: user.userId,
       attributes: {},
@@ -38,9 +37,7 @@ export const get: APIRoute = async (context) => {
     context.locals.auth.setSession(session);
     return context.redirect("/boards/", 302);
   } catch (e) {
-    console.log(e);
     if (e instanceof OAuthRequestError) {
-      console.log(e.response.url);
       return e.response;
     }
     return new Response(null, {

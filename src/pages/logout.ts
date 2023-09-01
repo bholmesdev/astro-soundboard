@@ -3,7 +3,6 @@ import { auth } from "@/lib/lucia";
 
 export const POST: APIRoute = async (context) => {
   const session = await context.locals.auth.validate();
-  console.log("session", session);
   if (!session) {
     return new Response("Unauthorized", {
       status: 401,
