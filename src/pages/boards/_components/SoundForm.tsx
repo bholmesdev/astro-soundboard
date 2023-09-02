@@ -6,17 +6,18 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useRef, useState, type FormEvent, useReducer } from "react";
+import { useState } from "react";
 import {
   QueryClient,
   QueryClientProvider,
   useMutation,
 } from "@tanstack/react-query";
 import { useDebouncedCallback } from "@/lib/debounce";
-import { soundCompleteValidator, soundValidator } from "@/lib/utils";
+import { cn, soundValidator } from "@/lib/utils";
 import { z } from "zod";
 import { AudioUploader, type UploadedFile } from "@/components/AudioUploader";
 import type { addSoundValidator } from "@/pages/api/sound";
+import { CheckIcon, Cross2Icon, ReloadIcon } from "@radix-ui/react-icons";
 
 const queryClient = new QueryClient();
 type Sound = z.infer<typeof soundValidator>;
@@ -103,7 +104,11 @@ function AddSoundForm({
         <CardContent className="flex flex-col gap-2">
           <AudioUploader onChange={(f) => setFile(f)} />
           <Button disabled={!isComplete} type="submit">
-            Add
+            {soundAdd.isLoading ? (
+              <ReloadIcon className="animate-spin" />
+            ) : (
+              "Add"
+            )}
           </Button>
         </CardContent>
       </Card>
@@ -118,15 +123,15 @@ function AddSoundForm({
 
 function SoundFormMutation(initial: Sound) {
   const soundUpdate = useMutation({
-    mutationFn: async (s: Partial<Sound>) =>
-      fetch(`/api/sound/`, {
+    mutationFn: async (s: Partial<Sound>) => {
+      const res = await fetch(`/api/sound`, {
         method: "PUT",
         body: JSON.stringify({ id: initial.id, ...s }),
-      }),
+      });
+      if (!res.ok) throw new Error("Unexpected error updating sound.");
+      return res;
+    },
   });
-
-  const isComplete =
-    soundUpdate.isSuccess || soundCompleteValidator.safeParse(initial).success;
 
   const debouncedName = useDebouncedCallback((name: string) => {
     soundUpdate.mutate({ name });
@@ -137,7 +142,7 @@ function SoundFormMutation(initial: Sound) {
     // uploadthing callbacks to drive submissions
     <form onSubmit={(e) => e.preventDefault()}>
       <Card>
-        <CardHeader className="flex-row flex justify-between items-center gap-2">
+        <CardHeader className="relative flex-row flex justify-between items-center gap-2">
           <Input
             className="text-2xl"
             type="text"
@@ -146,15 +151,36 @@ function SoundFormMutation(initial: Sound) {
             defaultValue={initial.name}
             onChange={(e) => debouncedName(e.target.value)}
           />
-          {isComplete ? (
-            <p className="bg-green-300 text-xs text-green-950 px-2 py-1 rounded-full">
-              ✓ Updated
+          {!soundUpdate.isIdle ? (
+            <p
+              aria-live="polite"
+              className={cn([
+                "absolute top-[-4px] right-[-4px] text-xs flex justify-center items-center w-5 h-5 !m-0 rounded-full transition-colors duration-300",
+                soundUpdate.isSuccess && "bg-green-100 text-green-950",
+                soundUpdate.isError && "bg-red-100 text-red-950",
+                soundUpdate.isLoading && "bg-yellow-100 text-yellow-950",
+              ])}
+            >
+              {soundUpdate.isSuccess && (
+                <>
+                  <CheckIcon />
+                  <span className="sr-only">Updated</span>
+                </>
+              )}
+              {soundUpdate.isLoading && (
+                <>
+                  <ReloadIcon className="animate-spin" />
+                  <span className="sr-only">Loading</span>
+                </>
+              )}
+              {soundUpdate.isError && (
+                <>
+                  <Cross2Icon />
+                  <span className="sr-only">Error</span>
+                </>
+              )}
             </p>
-          ) : (
-            <p className="bg-yellow-100 text-xs text-yellow-950 px-2 py-1 rounded-full">
-              ✗ Incomplete
-            </p>
-          )}
+          ) : null}
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           <AudioUploader
