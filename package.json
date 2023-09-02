@@ -37,8 +37,7 @@
     "uploadthing": "5.5.1-canary.3bf29d4",
     "uuid": "^9.0.0",
     "vercel": "^32.1.0",
-    "zod": "^3.22.2",
-    "zod-form-data": "^2.0.1"
+    "zod": "^3.22.2"
   },
   "devDependencies": {
     "@types/uuid": "^9.0.2",

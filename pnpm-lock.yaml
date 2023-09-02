@@ -92,9 +92,6 @@ dependencies:
   zod:
     specifier: ^3.22.2
     version: 3.22.2
-  zod-form-data:
-    specifier: ^2.0.1
-    version: 2.0.1(zod@3.22.2)
 
 devDependencies:
   '@types/uuid':
@@ -6711,14 +6708,6 @@ packages:
   /yocto-queue@1.0.0:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
-    dev: false
-
-  /zod-form-data@2.0.1(zod@3.22.2):
-    resolution: {integrity: sha512-4jcsj3vFyFGINLLHEmehfOPKdcw+HqV65RwsV2IdyLHp9wpvGJRVXWg1yY8sq0ASEbQfTVBRtI7LcDGv3Qpj8g==}
-    peerDependencies:
-      zod: ^3.11.x
-    dependencies:
-      zod: 3.22.2
     dev: false
 
   /zod@3.21.1:
