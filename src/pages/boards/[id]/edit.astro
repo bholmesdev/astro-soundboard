@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { Board, Sound, db } from "@/lib/schema";
 import Layout from "./_Layout.astro";
 import { Sounds } from "../_components/SoundForm";
+import { filterDraftSounds } from "@/lib/utils";
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/boards/");
@@ -18,7 +19,8 @@ const boards = await db
 const board = boards[0];
 if (!board) return Astro.redirect("/boards/");
 
-const sounds = await db.select().from(Sound).where(eq(Sound.boardId, id));
+const allSounds = await db.select().from(Sound).where(eq(Sound.boardId, id));
+const sounds = filterDraftSounds(allSounds);
 ---
 
 <Layout {board}>

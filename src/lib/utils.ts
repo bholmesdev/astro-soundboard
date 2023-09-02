@@ -24,16 +24,15 @@ export function isVercelUniqueConstraintViolation(
 
 export const soundValidator = z.object({
   id: z.string().uuid(),
-  name: z.string(),
-  fileUrl: z.string().url().nullable(),
-  fileName: z.string().nullable(),
-  fileKey: z.string().nullable(),
-});
-
-export const soundCompleteValidator = soundValidator.extend({
+  name: z.string().nonempty(),
   fileUrl: z.string().url(),
   fileName: z.string(),
   fileKey: z.string(),
-  name: z.string().nonempty(),
   boardId: z.string().uuid(),
 });
+
+export function filterDraftSounds(sounds: unknown[]) {
+  return sounds.filter((s): s is z.infer<typeof soundValidator> => {
+    return soundValidator.safeParse(s).success;
+  });
+}

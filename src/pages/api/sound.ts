@@ -1,9 +1,9 @@
 import { Board, Sound, db } from "@/lib/schema";
-import { soundCompleteValidator, soundValidator } from "@/lib/utils";
+import { soundValidator } from "@/lib/utils";
 import type { APIRoute } from "astro";
 import { and, eq, exists } from "drizzle-orm";
 
-export const addSoundValidator = soundCompleteValidator.omit({ id: true });
+export const addSoundValidator = soundValidator.omit({ id: true });
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const session = await locals.auth.validate();

@@ -4,8 +4,7 @@ import { Board, Sound, db } from "@/lib/schema";
 import Layout from "./_Layout.astro";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import type { z } from "zod";
-import { soundCompleteValidator } from "@/lib/utils";
+import { filterDraftSounds } from "@/lib/utils";
 const { id } = Astro.params;
 
 if (!id) return Astro.redirect("/boards/");
@@ -14,15 +13,8 @@ const boards = await db.select().from(Board).where(eq(Board.id, id!));
 const board = boards[0];
 if (!board) throw new Error(`No entry with id ${id}`);
 
-const soundsIncludingDrafts = await db
-  .select()
-  .from(Sound)
-  .where(eq(Sound.boardId, id));
-const sounds = soundsIncludingDrafts.filter(
-  (s): s is z.infer<typeof soundCompleteValidator> => {
-    return soundCompleteValidator.safeParse(s).success;
-  }
-);
+const allSounds = await db.select().from(Sound).where(eq(Sound.boardId, id));
+const sounds = filterDraftSounds(allSounds);
 ---
 
 <Layout {board}>

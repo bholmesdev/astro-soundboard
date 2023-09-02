@@ -11,10 +11,12 @@ export function AudioUploader({
   uploadedFile,
   soundId,
   onChange,
+  allowDeletion,
 }: {
   uploadedFile?: UploadedFile;
   soundId?: string;
   onChange?: (file: UploadedFile | null) => void;
+  allowDeletion?: boolean;
 }) {
   const [file, setFile] = useState<UploadedFile | null>(uploadedFile ?? null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -24,22 +26,24 @@ export function AudioUploader({
       {file ? (
         <div className="flex gap-2 items-center">
           <p className="text-gray-400">{file.name}</p>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={async () => {
-              const res = await fetch("/api/uploadthing", {
-                method: "DELETE",
-                body: JSON.stringify({ key: file.key, soundId }),
-              });
-              if (res.status === 200) {
-                setFile(null);
-                onChange?.(null);
-              }
-            }}
-          >
-            <TrashIcon />
-          </Button>
+          {allowDeletion ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={async () => {
+                const res = await fetch("/api/uploadthing", {
+                  method: "DELETE",
+                  body: JSON.stringify({ key: file.key, soundId }),
+                });
+                if (res.status === 200) {
+                  setFile(null);
+                  onChange?.(null);
+                }
+              }}
+            >
+              <TrashIcon />
+            </Button>
+          ) : null}
         </div>
       ) : (
         <UploadButton<SoundUploadRouter>
