@@ -33,7 +33,7 @@ function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
 
   const soundAdd = useMutation({
     async mutationFn() {
-      const res = await fetch(`/api/sounds/new`, {
+      const res = await fetch(`/api/sound`, {
         method: "POST",
         body: JSON.stringify({ boardId }),
       });
@@ -62,9 +62,9 @@ function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
 function SoundFormMutation(initial: Sound) {
   const soundUpdate = useMutation({
     mutationFn: async (s: Partial<Sound>) =>
-      fetch(`/api/sounds/${initial.id}`, {
+      fetch(`/api/sound`, {
         method: "PUT",
-        body: JSON.stringify(s),
+        body: JSON.stringify({ id: initial.id, ...s }),
       }),
   });
 
