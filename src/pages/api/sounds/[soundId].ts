@@ -17,7 +17,7 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
   }
 
   const json = await request.json();
-  const parsed = soundValidator.omit({ id: true }).safeParse(json);
+  const parsed = soundValidator.partial().safeParse(json);
   if (!parsed.success) {
     return new Response(JSON.stringify(parsed.error), { status: 400 });
   }

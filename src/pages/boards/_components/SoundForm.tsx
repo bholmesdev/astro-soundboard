@@ -59,24 +59,9 @@ function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
   );
 }
 
-function soundReducer(
-  state: Sound,
-  action: {
-    type: "update";
-    payload: Partial<Sound>;
-    mutate: (s: Sound) => void;
-  }
-) {
-  const s = { ...state, ...action.payload };
-  action.mutate(s);
-  return s;
-}
-
 function SoundFormMutation(initial: Sound) {
-  const [, dispatch] = useReducer(soundReducer, initial);
-
   const soundUpdate = useMutation({
-    mutationFn: async (s: Sound) =>
+    mutationFn: async (s: Partial<Sound>) =>
       fetch(`/api/sounds/${initial.id}`, {
         method: "PUT",
         body: JSON.stringify(s),
@@ -87,7 +72,7 @@ function SoundFormMutation(initial: Sound) {
     soundUpdate.isSuccess || soundCompleteValidator.safeParse(initial).success;
 
   const debouncedName = useDebouncedCallback((name: string) => {
-    dispatch({ type: "update", payload: { name }, mutate: soundUpdate.mutate });
+    soundUpdate.mutate({ name });
   }, 300);
 
   return (
@@ -127,14 +112,10 @@ function SoundFormMutation(initial: Sound) {
                 : undefined
             }
             onUpload={(f) => {
-              dispatch({
-                type: "update",
-                payload: {
-                  fileName: f.name,
-                  fileUrl: f.url,
-                  fileKey: f.key,
-                },
-                mutate: soundUpdate.mutate,
+              soundUpdate.mutate({
+                fileName: f.name,
+                fileUrl: f.url,
+                fileKey: f.key,
               });
             }}
           />
