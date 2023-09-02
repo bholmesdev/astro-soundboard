@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRef, useState, type FormEvent, useReducer } from "react";
 import {
@@ -10,7 +15,8 @@ import {
 import { useDebouncedCallback } from "@/lib/debounce";
 import { soundCompleteValidator, soundValidator } from "@/lib/utils";
 import { z } from "zod";
-import { AudioUploader } from "@/components/AudioUploader";
+import { AudioUploader, type UploadedFile } from "@/components/AudioUploader";
+import type { addSoundValidator } from "@/pages/api/sound";
 
 const queryClient = new QueryClient();
 type Sound = z.infer<typeof soundValidator>;
@@ -31,38 +37,89 @@ export function Sounds(props: SoundsFormProps) {
 function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
   const [sounds, setSounds] = useState(initialSounds);
 
-  const soundAdd = useMutation({
-    async mutationFn() {
-      const res = await fetch(`/api/sound`, {
-        method: "POST",
-        body: JSON.stringify({ boardId }),
-      });
-      const json = await res.json();
-      const parsed = soundValidator.parse(json);
-      return parsed;
-    },
-    async onSuccess(data) {
-      setSounds((prev) => [...prev, data]);
-    },
-  });
-
   return (
     <>
       {sounds.map((s) => (
         <SoundFormMutation key={s.id} {...s} />
       ))}
-      <Button onClick={() => soundAdd.mutate()}>Add</Button>
-      {soundAdd.error ? (
-        <p className="text-red-500">Unexpected error creating sound.</p>
-      ) : null}
+      <AddSoundForm
+        boardId={boardId}
+        onSuccess={(s) => setSounds((prev) => [...prev, s])}
+      />
     </>
+  );
+}
+
+function AddSoundForm({
+  boardId,
+  onSuccess,
+}: {
+  boardId: string;
+  onSuccess: (s: Sound) => void;
+}) {
+  const [name, setName] = useState("");
+  const [file, setFile] = useState<UploadedFile | null>(null);
+  const isComplete = name.length > 0 && file;
+
+  const soundAdd = useMutation({
+    async mutationFn(p: { name: string; file: UploadedFile }) {
+      const s: z.infer<typeof addSoundValidator> = {
+        boardId,
+        name: p.name,
+        fileName: p.file.name,
+        fileUrl: p.file.url,
+        fileKey: p.file.key,
+      };
+      const res = await fetch(`/api/sound`, {
+        method: "POST",
+        body: JSON.stringify(s),
+      });
+      const json = await res.json();
+      return soundValidator.parse(json);
+    },
+    onSuccess,
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!isComplete) return;
+        soundAdd.mutate({ name, file });
+      }}
+    >
+      <Card>
+        <CardHeader className="flex-row flex justify-between items-center gap-2">
+          <Input
+            required
+            className="text-2xl"
+            placeholder="New Sound"
+            type="text"
+            name="name"
+            onChange={(e) => setName(e.target.value)}
+            onFocus={(e) => e.target.select()}
+          />
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2">
+          <AudioUploader onChange={(f) => setFile(f)} />
+          <Button disabled={!isComplete} type="submit">
+            Add
+          </Button>
+        </CardContent>
+      </Card>
+      {soundAdd.error ? (
+        <CardFooter>
+          <p className="text-red-500">Unexpected error creating sound.</p>
+        </CardFooter>
+      ) : null}
+    </form>
   );
 }
 
 function SoundFormMutation(initial: Sound) {
   const soundUpdate = useMutation({
     mutationFn: async (s: Partial<Sound>) =>
-      fetch(`/api/sound`, {
+      fetch(`/api/sound/`, {
         method: "PUT",
         body: JSON.stringify({ id: initial.id, ...s }),
       }),
@@ -111,7 +168,8 @@ function SoundFormMutation(initial: Sound) {
                   }
                 : undefined
             }
-            onUpload={(f) => {
+            onChange={(f) => {
+              if (!f) return;
               soundUpdate.mutate({
                 fileName: f.name,
                 fileUrl: f.url,

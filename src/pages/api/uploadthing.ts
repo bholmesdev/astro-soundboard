@@ -9,7 +9,6 @@ const callbackUrl = new URL(
   "/api/uploadthing",
   import.meta.env.DEV ? "http://localhost:3000" : import.meta.env.SITE
 ).href;
-console.log(callbackUrl);
 
 const handlers = createServerHandler({
   router: uploadRouter,
@@ -33,7 +32,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 const deleteValidator = z.object({
   key: z.string(),
-  soundId: z.string().uuid(),
+  soundId: z.string().uuid().optional(),
 });
 
 export const DELETE: APIRoute = async ({ request, locals }) => {
@@ -51,18 +50,19 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
   }
 
   const { key, soundId } = parsed.data;
-  const updated = await db
-    .update(Sound)
-    .set({
-      fileKey: null,
-      fileUrl: null,
-      fileName: null,
-    })
-    .where(eq(Sound.id, soundId))
-    .returning();
-
-  if (!updated.length) {
-    return new Response(`No sound with id ${soundId}`, { status: 400 });
+  if (soundId) {
+    const updated = await db
+      .update(Sound)
+      .set({
+        fileKey: null,
+        fileUrl: null,
+        fileName: null,
+      })
+      .where(eq(Sound.id, soundId))
+      .returning();
+    if (!updated.length) {
+      return new Response(`No sound with id ${soundId}`, { status: 400 });
+    }
   }
 
   const { success } = await utapi.deleteFiles(key);

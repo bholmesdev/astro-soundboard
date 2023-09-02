@@ -1,12 +1,9 @@
 import { Board, Sound, db } from "@/lib/schema";
-import { soundValidator } from "@/lib/utils";
+import { soundCompleteValidator, soundValidator } from "@/lib/utils";
 import type { APIRoute } from "astro";
 import { and, eq, exists } from "drizzle-orm";
-import { z } from "zod";
 
-const payload = z.object({
-  boardId: z.string().uuid(),
-});
+export const addSoundValidator = soundCompleteValidator.omit({ id: true });
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const session = await locals.auth.validate();
@@ -24,7 +21,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       status: 400,
     });
   }
-  const { boardId } = payload.parse(data);
+  const { boardId, ...values } = addSoundValidator.parse(data);
 
   const board = await db
     .select({ boardId: Board.id })
@@ -35,15 +32,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response("Not found", { status: 404 });
   }
 
-  const [sound] = await db
+  const inserted = await db
     .insert(Sound)
     .values({
-      name: "New Sound",
       boardId,
+      ...values,
     })
     .returning();
 
-  return new Response(JSON.stringify(sound), {
+  if (!inserted.length) {
+    return new Response("Failed to insert sound", { status: 500 });
+  }
+
+  return new Response(JSON.stringify(inserted[0]), {
     headers: { "Content-Type": "application/json" },
   });
 };

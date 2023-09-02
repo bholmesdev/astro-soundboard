@@ -5,16 +5,16 @@ import { useState } from "react";
 import { TrashIcon } from "@radix-ui/react-icons";
 import type { UploadFileResponse } from "uploadthing/client";
 
-type UploadedFile = Pick<UploadFileResponse, "key" | "url" | "name">;
+export type UploadedFile = Pick<UploadFileResponse, "key" | "url" | "name">;
 
 export function AudioUploader({
   uploadedFile,
   soundId,
-  onUpload,
+  onChange,
 }: {
   uploadedFile?: UploadedFile;
-  soundId: string;
-  onUpload?: (file: UploadedFile) => void;
+  soundId?: string;
+  onChange?: (file: UploadedFile | null) => void;
 }) {
   const [file, setFile] = useState<UploadedFile | null>(uploadedFile ?? null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -34,6 +34,7 @@ export function AudioUploader({
               });
               if (res.status === 200) {
                 setFile(null);
+                onChange?.(null);
               }
             }}
           >
@@ -48,7 +49,7 @@ export function AudioUploader({
             if (!uploaded) return;
 
             setFile(uploaded);
-            onUpload?.(uploaded);
+            onChange?.(uploaded);
           }}
           onUploadError={(e) => {
             setUploadError(e.message);
