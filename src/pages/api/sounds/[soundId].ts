@@ -1,5 +1,5 @@
 import { Board, Sound, db } from "@/lib/schema";
-import { updateSoundValidator } from "@/lib/utils";
+import { soundValidator } from "@/lib/utils";
 import type { APIRoute } from "astro";
 import { and, eq, exists } from "drizzle-orm";
 
@@ -16,8 +16,8 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
     return new Response("Invalid soundId", { status: 400 });
   }
 
-  const formData = await request.formData();
-  const parsed = updateSoundValidator.safeParse(formData);
+  const json = await request.json();
+  const parsed = soundValidator.omit({ id: true }).safeParse(json);
   if (!parsed.success) {
     return new Response(JSON.stringify(parsed.error), { status: 400 });
   }

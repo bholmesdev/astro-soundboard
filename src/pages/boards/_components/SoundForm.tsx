@@ -1,18 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent, useReducer } from "react";
 import {
   QueryClient,
   QueryClientProvider,
   useMutation,
 } from "@tanstack/react-query";
 import { useDebouncedCallback } from "@/lib/debounce";
-import {
-  soundCompleteValidator,
-  updateSoundValidator,
-  soundValidator,
-} from "@/lib/utils";
+import { soundCompleteValidator, soundValidator } from "@/lib/utils";
 import { z } from "zod";
 import { AudioUploader } from "@/components/AudioUploader";
 
@@ -63,38 +59,41 @@ function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
   );
 }
 
+function soundReducer(
+  state: Sound,
+  action: {
+    type: "update";
+    payload: Partial<Sound>;
+    mutate: (s: Sound) => void;
+  }
+) {
+  const s = { ...state, ...action.payload };
+  action.mutate(s);
+  return s;
+}
+
 function SoundFormMutation(initial: Sound) {
+  const [, dispatch] = useReducer(soundReducer, initial);
+
   const soundUpdate = useMutation({
-    mutationFn: async (formData: FormData) => {
-      return fetch(`/api/sounds/${initial.id}`, {
+    mutationFn: async (s: Sound) =>
+      fetch(`/api/sounds/${initial.id}`, {
         method: "PUT",
-        body: formData,
-      });
-    },
+        body: JSON.stringify(s),
+      }),
   });
-  const formRef = useRef<HTMLFormElement>(null);
 
   const isComplete =
     soundUpdate.isSuccess || soundCompleteValidator.safeParse(initial).success;
 
-  const debounced = useDebouncedCallback((formData: FormData) => {
-    console.log("debounced", Object.fromEntries(formData.entries()));
-    const parsed = updateSoundValidator.safeParse(formData);
-    if (parsed.success) {
-      soundUpdate.mutate(formData);
-    }
+  const debouncedName = useDebouncedCallback((name: string) => {
+    dispatch({ type: "update", payload: { name }, mutate: soundUpdate.mutate });
   }, 300);
 
   return (
-    <form
-      ref={formRef}
-      onChange={(e) => {
-        console.log(e);
-        e.preventDefault();
-        const data = new FormData(e.currentTarget as HTMLFormElement);
-        debounced(data);
-      }}
-    >
+    // `preventDefault`: Using `onChange` and
+    // uploadthing callbacks to drive submissions
+    <form onSubmit={(e) => e.preventDefault()}>
       <Card>
         <CardHeader className="flex-row flex justify-between items-center gap-2">
           <Input
@@ -103,6 +102,7 @@ function SoundFormMutation(initial: Sound) {
             name="name"
             onFocus={(e) => e.target.select()}
             defaultValue={initial.name}
+            onChange={(e) => debouncedName(e.target.value)}
           />
           {isComplete ? (
             <p className="bg-green-300 text-xs text-green-950 px-2 py-1 rounded-full">
@@ -127,12 +127,15 @@ function SoundFormMutation(initial: Sound) {
                 : undefined
             }
             onUpload={(f) => {
-              if (!formRef.current) return;
-              const formData = new FormData(formRef.current);
-              formData.set("fileKey", f.key);
-              formData.set("fileName", f.name);
-              formData.set("fileUrl", f.url);
-              debounced(formData);
+              dispatch({
+                type: "update",
+                payload: {
+                  fileName: f.name,
+                  fileUrl: f.url,
+                  fileKey: f.key,
+                },
+                mutate: soundUpdate.mutate,
+              });
             }}
           />
         </CardContent>

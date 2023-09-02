@@ -1,6 +1,6 @@
 import { UploadButton } from "@uploadthing/react";
 import type { SoundUploadRouter } from "@/lib/uploadthing";
-import { Button, buttonVariants } from "./ui/button";
+import { Button } from "./ui/button";
 import { useState } from "react";
 import { TrashIcon } from "@radix-ui/react-icons";
 import type { UploadFileResponse } from "uploadthing/client";
@@ -55,9 +55,6 @@ export function AudioUploader({
           }}
         />
       )}
-      <input type="hidden" name="fileKey" value={file?.key ?? ""} />
-      <input type="hidden" name="fileName" value={file?.name ?? ""} />
-      <input type="hidden" name="fileUrl" value={file?.url ?? ""} />
 
       {uploadError ? (
         <p className="bg-red-200 px-2 py-1 rounded-md text-background">

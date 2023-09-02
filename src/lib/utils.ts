@@ -1,7 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
-import { zfd } from "zod-form-data";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -37,11 +36,4 @@ export const soundCompleteValidator = soundValidator.extend({
   fileKey: z.string(),
   name: z.string().nonempty(),
   boardId: z.string().uuid(),
-});
-
-export const updateSoundValidator = zfd.formData({
-  name: zfd.text(z.string().nonempty()),
-  fileKey: zfd.text(z.string().nonempty()),
-  fileName: zfd.text(z.string().nonempty()),
-  fileUrl: zfd.text(z.string().url()),
 });
