@@ -87,13 +87,14 @@ function AddSoundForm({
         e.preventDefault();
         if (!isComplete) return;
         soundAdd.mutate({ name, file });
+        e.currentTarget.reset();
       }}
     >
-      <Card>
+      <Card className="aspect-square flex flex-col">
         <CardHeader className="flex-row flex justify-between items-center gap-2">
           <Input
             required
-            className="text-2xl"
+            className="text-2xl text-center"
             placeholder="New Sound"
             type="text"
             name="name"
@@ -101,9 +102,13 @@ function AddSoundForm({
             onFocus={(e) => e.target.select()}
           />
         </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <AudioUploader onChange={(f) => setFile(f)} />
-          <Button disabled={!isComplete} type="submit">
+        <CardContent className="flex flex-col flex-1 justify-between">
+          <AudioUploader onChange={(f) => setFile(f)} allowDeletion />
+          <Button
+            className="mt-auto"
+            disabled={!isComplete || soundAdd.isLoading}
+            type="submit"
+          >
             {soundAdd.isLoading ? (
               <ReloadIcon className="animate-spin" />
             ) : (
@@ -112,11 +117,11 @@ function AddSoundForm({
           </Button>
         </CardContent>
       </Card>
-      {soundAdd.error ? (
-        <CardFooter>
+      <CardFooter>
+        {soundAdd.error ? (
           <p className="text-red-500">Unexpected error creating sound.</p>
-        </CardFooter>
-      ) : null}
+        ) : null}
+      </CardFooter>
     </form>
   );
 }
@@ -141,10 +146,14 @@ function SoundFormMutation(initial: Sound) {
     // `preventDefault`: Using `onChange` and
     // uploadthing callbacks to drive submissions
     <form onSubmit={(e) => e.preventDefault()}>
-      <Card>
+      <Card
+        className="aspect-square"
+        style={{ viewTransitionName: "sound-" + initial.id }}
+      >
         <CardHeader className="relative flex-row flex justify-between items-center gap-2">
           <Input
-            className="text-2xl"
+            className="text-2xl text-center"
+            style={{ viewTransitionName: "sound-name-" + initial.id }}
             type="text"
             name="name"
             onFocus={(e) => e.target.select()}

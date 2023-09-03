@@ -16,7 +16,7 @@ const isPlay = currentPath === playPath;
 ---
 
 <MainLayout>
-  <main class="m-auto max-w-screen-xl">
+  <main class="px-3 m-auto max-w-screen-lg">
     <div class="flex justify-between items-center">
       <h1 class="text-4xl mb-4">{board.name}</h1>
       <nav class="flex justify-end gap-3">
@@ -41,7 +41,7 @@ const isPlay = currentPath === playPath;
         }
       </nav>
     </div>
-    <div transition:animate="slide" class="grid grid-cols-3 gap-3">
+    <div transition:animate="slide" class="grid grid-cols-auto-cards gap-6">
       <slot />
     </div>
   </main>

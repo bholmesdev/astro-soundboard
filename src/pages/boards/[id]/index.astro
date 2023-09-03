@@ -20,31 +20,75 @@ const sounds = filterDraftSounds(allSounds);
 <Layout {board}>
   {
     sounds.map((s) => (
-      <Card>
-        <CardHeader className="flex-row flex justify-between items-center gap-2">
-          <h2 class="text-2xl">{s.name}</h2>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <Button data-play id={s.fileUrl}>
-            Play
-            <audio hidden src={s.fileUrl} />
-          </Button>
-          <p class="text-xs text-gray-500">{s.fileUrl}</p>
-        </CardContent>
-      </Card>
+      <button
+        class="m-2 aspect-square rounded-xl border bg-card text-card-foreground text-2xl shadow"
+        data-play="true"
+        transition:name={"sound-" + s.id}
+      >
+        <span
+          transition:name={"sound-name-" + s.id}
+          class="pointer-events-none block"
+        >
+          {s.name}
+        </span>
+        <audio hidden src={s.fileUrl} />
+      </button>
     ))
   }
 </Layout>
 
 <script>
+  function click(target: HTMLElement) {
+    const audioElement = target.querySelector("audio");
+    if (!audioElement) return;
+
+    audioElement.currentTime = 0;
+    audioElement.play();
+
+    target.classList.add("clicked");
+    setTimeout(() => target.classList.remove("clicked"), 150);
+  }
+
   document.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
     if (target.hasAttribute("data-play")) {
-      const audioElement = target.querySelector("audio");
-      if (!audioElement) return;
-
-      audioElement.currentTime = 0;
-      audioElement.play();
+      click(target);
     }
   });
+  document.addEventListener("keydown", (e) => {
+    const key = e.key;
+    if (!key.match(/[1-9]/)) return;
+    const button = document.querySelector(
+      `button[data-play]:nth-child(${key})`
+    );
+    if (!button) return;
+    click(button as HTMLElement);
+  });
 </script>
+
+<style>
+  button {
+    --spring-easing: linear(
+      0,
+      0.035,
+      0.141 4.4%,
+      0.938 16.7%,
+      1.077 20.4%,
+      1.149 24.3%,
+      1.163 27%,
+      1.154 29.9%,
+      1.017 43.1%,
+      0.991,
+      0.977 51%,
+      0.975 57.1%,
+      1.003 76.9%,
+      1
+    );
+    transition: transform 1s var(--spring-easing);
+  }
+  button.clicked,
+  button:active {
+    transition: transform 0.15s ease-out;
+    transform: scale(1.2);
+  }
+</style>
