@@ -151,7 +151,7 @@ function SoundFormMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/sound`, {
         method: "DELETE",
-        body: JSON.stringify({ id: initial.id }),
+        body: JSON.stringify({ id: initial.id, fileKey: initial.fileKey }),
       });
       if (!res.ok) throw new Error("Unexpected error deleting sound.");
       return res;

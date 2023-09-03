@@ -2,6 +2,7 @@ import { Board, Sound, db } from "@/lib/schema";
 import { soundValidator } from "@/lib/utils";
 import type { APIRoute } from "astro";
 import { and, eq, exists } from "drizzle-orm";
+import { utapi } from "uploadthing/server";
 
 export const addSoundValidator = soundValidator.omit({ id: true });
 
@@ -98,7 +99,9 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
   }
 
   const json = await request.json();
-  const parsed = soundValidator.pick({ id: true }).safeParse(json);
+  const parsed = soundValidator
+    .pick({ id: true, fileKey: true })
+    .safeParse(json);
 
   if (!parsed.success) {
     return new Response(JSON.stringify(parsed.error), { status: 400 });
@@ -118,6 +121,16 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
 
   if (deleted.length === 0) {
     return new Response("Not found", { status: 404 });
+  }
+
+  if (import.meta.env.DEV) {
+    process.env.UPLOADTHING_APPID = import.meta.env.UPLOADTHING_APPID;
+    process.env.UPLOADTHING_SECRET = import.meta.env.UPLOADTHING_SECRET;
+  }
+
+  const { success } = await utapi.deleteFiles(sound.fileKey);
+  if (!success) {
+    return new Response("Uploadthing failed to delete files", { status: 500 });
   }
 
   return new Response(null);
