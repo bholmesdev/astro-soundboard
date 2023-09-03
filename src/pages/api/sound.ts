@@ -88,3 +88,37 @@ export const PUT: APIRoute = async ({ request, locals }) => {
 
   return new Response(null);
 };
+
+export const DELETE: APIRoute = async ({ request, locals }) => {
+  const session = await locals.auth.validate();
+  if (!session) {
+    return new Response("Unauthorized", {
+      status: 401,
+    });
+  }
+
+  const json = await request.json();
+  const parsed = soundValidator.pick({ id: true }).safeParse(json);
+
+  if (!parsed.success) {
+    return new Response(JSON.stringify(parsed.error), { status: 400 });
+  }
+
+  const sound = parsed.data;
+  const boardQuery = db
+    .select({ boardId: Board.id })
+    .from(Sound)
+    .innerJoin(Board, eq(Sound.boardId, Board.id))
+    .where(and(eq(Board.userId, session.user.userId), eq(Sound.id, sound.id)));
+
+  const deleted = await db
+    .delete(Sound)
+    .where(and(eq(Sound.id, sound.id), exists(boardQuery)))
+    .returning({ id: Sound.id });
+
+  if (deleted.length === 0) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  return new Response(null);
+};

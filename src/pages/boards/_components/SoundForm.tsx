@@ -41,7 +41,13 @@ function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
   return (
     <>
       {sounds.map((s) => (
-        <SoundFormMutation key={s.id} {...s} />
+        <SoundFormMutation
+          onDelete={(s) =>
+            setSounds((prev) => prev.filter((p) => p.id !== s.id))
+          }
+          key={s.id}
+          {...s}
+        />
       ))}
       <AddSoundForm
         boardId={boardId}
@@ -126,7 +132,10 @@ function AddSoundForm({
   );
 }
 
-function SoundFormMutation(initial: Sound) {
+function SoundFormMutation({
+  onDelete,
+  ...initial
+}: { onDelete?: (s: Sound) => void } & Sound) {
   const soundUpdate = useMutation({
     mutationFn: async (s: Partial<Sound>) => {
       const res = await fetch(`/api/sound`, {
@@ -138,6 +147,18 @@ function SoundFormMutation(initial: Sound) {
     },
   });
 
+  const soundDelete = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/sound`, {
+        method: "DELETE",
+        body: JSON.stringify({ id: initial.id }),
+      });
+      if (!res.ok) throw new Error("Unexpected error deleting sound.");
+      return res;
+    },
+    onSuccess: () => onDelete?.(initial),
+  });
+
   const debouncedName = useDebouncedCallback((name: string) => {
     soundUpdate.mutate({ name });
   }, 300);
@@ -147,7 +168,7 @@ function SoundFormMutation(initial: Sound) {
     // uploadthing callbacks to drive submissions
     <form onSubmit={(e) => e.preventDefault()}>
       <Card
-        className="aspect-square"
+        className="aspect-square flex flex-col"
         style={{ viewTransitionName: "sound-" + initial.id }}
       >
         <CardHeader className="relative flex-row flex justify-between items-center gap-2">
@@ -191,7 +212,7 @@ function SoundFormMutation(initial: Sound) {
             </p>
           ) : null}
         </CardHeader>
-        <CardContent className="flex flex-col gap-2">
+        <CardContent className="flex flex-col flex-1 gap-2 justify-between">
           <AudioUploader
             soundId={initial.id}
             uploadedFile={
@@ -212,6 +233,20 @@ function SoundFormMutation(initial: Sound) {
               });
             }}
           />
+          <Button
+            variant="outline"
+            className="mt-auto"
+            onClick={() => soundDelete.mutate()}
+          >
+            {soundDelete.isLoading ? (
+              <ReloadIcon className="animate-spin" />
+            ) : (
+              <>Delete</>
+            )}
+          </Button>
+          {soundDelete.error ? (
+            <p className="text-red-500">Unexpected error deleting sound.</p>
+          ) : null}
         </CardContent>
       </Card>
     </form>
