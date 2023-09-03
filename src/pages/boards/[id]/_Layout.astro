@@ -40,11 +40,13 @@ const isPlay = currentPath === playPath;
             >
               {isPlay ? (
                 <>
-                  Edit <Pencil2Icon data-icon className="ml-1" />
+                  Edit{" "}
+                  <Pencil2Icon data-icon className="ml-1 pointer-events-none" />
                 </>
               ) : (
                 <>
-                  Play <PlayIcon data-icon className="ml-1" />
+                  Play{" "}
+                  <PlayIcon data-icon className="ml-1 pointer-events-none" />
                 </>
               )}
               <ReloadIcon data-icon className="ml-1 hidden animate-spin" />
@@ -65,10 +67,9 @@ document.querySelector("a[data-edit-play]")?.addEventListener(
   (e) => {
     if (!e.target) return;
     for (const icon of e.target.querySelectorAll("[data-icon]")) {
-      console.log(icon);
       icon.classList.toggle("hidden");
     }
   },
   { once: true }
-);
+  );
 </script>
