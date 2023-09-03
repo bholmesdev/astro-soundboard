@@ -59,17 +59,20 @@ const isPlay = currentPath === playPath;
       <slot />
     </div>
   </main>
+
+{isOwner ? (
+  <script is:inline>
+  document.querySelector("a[data-edit-play]")?.addEventListener(
+    "click",
+    (e) => {
+      if (!e.target) return;
+      for (const icon of e.target.querySelectorAll("[data-icon]")) {
+        icon.classList.toggle("hidden");
+      }
+    },
+    { once: true }
+  );
+  </script>
+) : null}
 </MainLayout>
 
-<script is:inline>
-document.querySelector("a[data-edit-play]")?.addEventListener(
-  "click",
-  (e) => {
-    if (!e.target) return;
-    for (const icon of e.target.querySelectorAll("[data-icon]")) {
-      icon.classList.toggle("hidden");
-    }
-  },
-  { once: true }
-);
-</script>
