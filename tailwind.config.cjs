@@ -11,6 +11,9 @@ module.exports = {
       },
     },
     extend: {
+      gridTemplateColumns: {
+        "auto-cards": "repeat(auto-fill, minmax(12rem, 1fr))",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
