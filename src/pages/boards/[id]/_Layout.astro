@@ -1,6 +1,14 @@
 ---
+import { buttonVariants } from "@/components/ui/button";
 import MainLayout from "@/layouts/MainLayout.astro";
 import type { Board } from "@/lib/schema";
+import { cn } from "@/lib/utils";
+import {
+  Pencil1Icon,
+  Pencil2Icon,
+  PlayIcon,
+  ReloadIcon,
+} from "@radix-ui/react-icons";
 
 type Props = { board: typeof Board.$inferSelect };
 
@@ -23,19 +31,23 @@ const isPlay = currentPath === playPath;
         {
           isOwner ? (
             <a
-              class="relative flex items-center justify-center w-[var(--width)] h-[var(--toggle-size)] rounded-full bg-gray-800"
+              class={buttonVariants({
+                variant: isPlay ? "default" : "secondary",
+              })}
+              data-edit-play
+              transition:name="edit-play-link"
               href={isPlay ? editPath : playPath}
             >
-              <span
-                transition:name="toggle"
-                class:list={[
-                  "absolute top-0 left-0 w-[var(--toggle-size)] h-[var(--toggle-size)] rounded-full bg-primary",
-                  isPlay
-                    ? "translate-x-[var(--toggle-x-translate)]"
-                    : "translate-x-0",
-                ]}
-              />
-              {isPlay ? "Play" : "Edit"}
+              {isPlay ? (
+                <>
+                  Edit <Pencil2Icon data-icon className="ml-1" />
+                </>
+              ) : (
+                <>
+                  Play <PlayIcon data-icon className="ml-1" />
+                </>
+              )}
+              <ReloadIcon data-icon className="ml-1 hidden animate-spin" />
             </a>
           ) : null
         }
@@ -47,10 +59,16 @@ const isPlay = currentPath === playPath;
   </main>
 </MainLayout>
 
-<style>
-  a {
-    --width: 7rem;
-    --toggle-size: 2rem;
-    --toggle-x-translate: calc(var(--width) - var(--toggle-size));
-  }
-</style>
+<script is:inline>
+document.querySelector("a[data-edit-play]")?.addEventListener(
+  "click",
+  (e) => {
+    if (!e.target) return;
+    for (const icon of e.target.querySelectorAll("[data-icon]")) {
+      console.log(icon);
+      icon.classList.toggle("hidden");
+    }
+  },
+  { once: true }
+);
+</script>
