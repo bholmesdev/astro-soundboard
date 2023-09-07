@@ -7,19 +7,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useMutation,
-} from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useDebouncedCallback } from "@/lib/debounce";
 import { cn, soundValidator } from "@/lib/utils";
 import { z } from "zod";
 import { AudioUploader, type UploadedFile } from "@/components/AudioUploader";
 import type { addSoundValidator } from "@/pages/api/sound";
 import { CheckIcon, Cross2Icon, ReloadIcon } from "@radix-ui/react-icons";
+import { QueryContext } from "@/lib/tanstack";
 
-const queryClient = new QueryClient();
 type Sound = z.infer<typeof soundValidator>;
 
 type SoundsFormProps = {
@@ -27,15 +23,7 @@ type SoundsFormProps = {
   initialSounds: Sound[];
 };
 
-export function Sounds(props: SoundsFormProps) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <SoundsMutation {...props} />
-    </QueryClientProvider>
-  );
-}
-
-function SoundsMutation({ initialSounds, boardId }: SoundsFormProps) {
+export function Sounds({ initialSounds, boardId }: SoundsFormProps) {
   const [sounds, setSounds] = useState(initialSounds);
 
   return (
@@ -85,6 +73,7 @@ function AddSoundForm({
       return soundValidator.parse(json);
     },
     onSuccess,
+    context: QueryContext,
   });
 
   return (
@@ -145,6 +134,7 @@ function SoundFormMutation({
       if (!res.ok) throw new Error("Unexpected error updating sound.");
       return res;
     },
+    context: QueryContext,
   });
 
   const soundDelete = useMutation({
@@ -157,6 +147,7 @@ function SoundFormMutation({
       return res;
     },
     onSuccess: () => onDelete?.(initial),
+    context: QueryContext,
   });
 
   const debouncedName = useDebouncedCallback((name: string) => {

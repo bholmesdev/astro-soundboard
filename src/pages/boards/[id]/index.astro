@@ -16,6 +16,7 @@ const sounds = filterDraftSounds(allSounds);
 ---
 
 <Layout {board}>
+  <h1 class="text-4xl" slot="board-name">{board.name}</h1>
   {
     sounds.map((s) => (
       <button

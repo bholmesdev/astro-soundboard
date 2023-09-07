@@ -2,9 +2,7 @@
 import { buttonVariants } from "@/components/ui/button";
 import MainLayout from "@/layouts/MainLayout.astro";
 import type { Board } from "@/lib/schema";
-import { cn } from "@/lib/utils";
 import {
-  Pencil1Icon,
   Pencil2Icon,
   PlayIcon,
   ReloadIcon,
@@ -25,8 +23,8 @@ const isPlay = currentPath === playPath;
 
 <MainLayout>
   <main class="px-3 m-auto max-w-screen-lg">
-    <div class="flex justify-between items-center">
-      <h1 class="text-4xl mb-4">{board.name}</h1>
+    <div class="flex justify-between items-center mb-4">
+      <slot name="board-name" />
       <nav class="flex justify-end gap-3">
         {
           isOwner ? (

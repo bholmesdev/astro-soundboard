@@ -4,6 +4,7 @@ import { Board, Sound, db } from "@/lib/schema";
 import Layout from "./_Layout.astro";
 import { Sounds } from "../_components/SoundForm";
 import { filterDraftSounds } from "@/lib/utils";
+import { BoardNameInput } from "../_components/BoardNameInput";
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/boards/");
@@ -24,5 +25,6 @@ const sounds = filterDraftSounds(allSounds);
 ---
 
 <Layout {board}>
+  <BoardNameInput client:load {board} slot="board-name" />
   <Sounds client:load initialSounds={sounds} boardId={board.id} />
 </Layout>

@@ -31,6 +31,12 @@ export const soundValidator = z.object({
   boardId: z.string().uuid(),
 });
 
+export const boardValidator = z.object({
+  id: z.string().uuid(),
+  name: z.string().nonempty(),
+  userId: z.string().uuid(),
+});
+
 export function filterDraftSounds(sounds: unknown[]) {
   return sounds.filter((s): s is z.infer<typeof soundValidator> => {
     return soundValidator.safeParse(s).success;
