@@ -29,6 +29,7 @@ export function BoardNameInput({
   return (
     <Input
       name="board-name"
+      className="text-2xl"
       onChange={(e) => debouncedName(e.target.value)}
       defaultValue={board.name}
     />
